@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration - Coin des Éleveurs</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="db.js"></script>
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            green: '#1E8E3E',
+                            light: '#4ade80',
+                            dark: '#14532d',
+                        },
+                        gold: '#FBBF24',
+                        surface: '#f8fafc',
+                        admin: '#1e293b' // Dark theme color for admin
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="font-sans bg-surface text-gray-800 antialiased h-screen flex overflow-hidden">
+
+    <!-- Sidebar Admin (Dark Theme) -->
+    <aside class="w-64 bg-admin border-r border-gray-800 hidden md:flex flex-col h-full z-20 shadow-2xl text-white">
+        <div class="h-20 flex items-center px-6 border-b border-gray-700 bg-gray-900/50">
+            <div class="flex items-center gap-2 cursor-pointer hover:scale-105 active:scale-95 transition-all duration-300" onclick="window.location.href='index.html'">
+                <div class="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center shadow-lg shadow-red-600/30">
+                    <i data-lucide="shield" class="text-white w-5 h-5"></i>
+                </div>
+                <span class="font-bold text-xl">Admin <span class="text-red-500">Panel</span></span>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto py-4 px-3 hide-scrollbar">
+            <div class="space-y-1">
+                <a href="#" onclick="switchTab('overview')" id="link-overview" class="nav-link flex items-center gap-3 px-3 py-2.5 bg-white/10 text-white rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5 text-red-400"></i> Vue Globale
+                </a>
+                <a href="#" onclick="switchTab('users')" id="link-users" class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-400 hover:bg-white/5 hover:text-white rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
+                    <i data-lucide="users" class="w-5 h-5"></i> Utilisateurs
+                </a>
+                <a href="#" onclick="switchTab('eleveurs')" id="link-eleveurs" class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-400 hover:bg-white/5 hover:text-white rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
+                    <i data-lucide="store" class="w-5 h-5"></i> Éleveurs Vérifiés
+                </a>
+                <a href="#" onclick="switchTab('animaux')" id="link-animaux" class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-400 hover:bg-white/5 hover:text-white rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
+                    <i data-lucide="paw-print" class="w-5 h-5"></i> Annonces Animaux
+                </a>
+                <a href="#" onclick="switchTab('forum')" id="link-forum" class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-400 hover:bg-white/5 hover:text-white rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
+                    <i data-lucide="headphones" class="w-5 h-5"></i> Support & Tickets
+                </a>
+                <a href="#" onclick="switchTab('foires')" id="link-foires" class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-400 hover:bg-white/5 hover:text-white rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
+                    <i data-lucide="video" class="w-5 h-5"></i> Gestion Foires (Live)
+                </a>
+                <a href="#" onclick="switchTab('paiements')" id="link-paiements" class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-400 hover:bg-white/5 hover:text-white rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
+                    <i data-lucide="credit-card" class="w-5 h-5"></i> Paiements & Abonnements
+                </a>
+            </div>
+
+            <div class="mt-8 mb-4 px-3">
+                <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Système</h3>
+                <div class="space-y-1">
+                    <a href="#" onclick="switchTab('settings')" id="link-settings" class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-400 hover:bg-white/5 hover:text-white rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
+                        <i data-lucide="settings" class="w-5 h-5"></i> Paramètres
+                    </a>
+                    <a href="#" onclick="DB.logout(); window.location.href='index.html'" class="flex items-center gap-3 px-3 py-2.5 text-gray-400 hover:bg-white/5 hover:text-white rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
+                        <i data-lucide="log-out" class="w-5 h-5 text-red-500"></i> Déconnexion
+                    </a>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden bg-gray-50">
+        
+        <!-- Topbar -->
+        <header class="h-20 bg-white border-b border-gray-200 flex items-center justify-between px-6 z-10 shadow-sm">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-900 transition-colors">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <h1 class="text-2xl font-bold text-gray-900 hidden sm:block">Tableau de bord Administrateur</h1>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <!-- Global Search -->
+                <div class="hidden lg:flex items-center bg-gray-100 rounded-full px-4 py-2 focus-within:ring-2 focus-within:ring-admin transition-all w-72 hover:shadow-md">
+                    <i data-lucide="search" class="w-4 h-4 text-gray-500"></i>
+                    <input type="text" placeholder="Rechercher utilisateur, annonce..." class="bg-transparent border-none focus:outline-none text-sm ml-2 w-full text-gray-700">
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <button class="relative text-gray-500 hover:text-red-500 hover:scale-110 active:scale-95 transition-all duration-300">
+                        <i data-lucide="bell" class="w-6 h-6"></i>
+                        <span class="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
+                    </button>
+                    
+                    <div class="h-8 w-px bg-gray-200"></div>
+
+                    <div class="flex items-center gap-3 cursor-pointer hover:scale-105 active:scale-95 transition-transform duration-300">
+                        <div class="text-right hidden sm:block">
+                            <p class="text-sm font-bold text-gray-900">Super Admin</p>
+                            <p class="text-xs text-red-500 font-medium">Système</p>
+                        </div>
+                        <img src="https://ui-avatars.com/api/?name=Admin&background=1e293b&color=fff" alt="Avatar Admin" class="w-10 h-10 rounded-full border-2 border-admin">
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Scrollable Dashboard Content -->
+        <div class="flex-1 overflow-y-auto p-6 relative">
+            <div id="view-overview" class="view-section block max-w-7xl mx-auto space-y-6">
+                
+                <!-- Welcome Banner -->
+                <div class="bg-admin text-white rounded-3xl p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden shadow-2xl hover:shadow-xl transition-shadow duration-300">
+                    <div class="absolute right-0 top-0 w-96 h-96 bg-red-500/20 rounded-full blur-3xl -mr-32 -mt-32"></div>
+                    <div class="absolute left-0 bottom-0 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl -ml-20 -mb-20"></div>
+                    <div class="relative z-10">
+                        <h2 class="text-3xl font-extrabold mb-2">Contrôle Global du Site</h2>
+                        <p class="text-gray-300 text-lg">Supervisez l'activité des éleveurs, des utilisateurs et gérez les revenus.</p>
+                    </div>
+                    <button class="relative z-10 bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-red-500/30 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-2">
+                        <i data-lucide="file-text" class="w-5 h-5"></i> Générer Rapport
+                    </button>
+                </div>
+
+                <!-- KPI Stats Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Revenus -->
+                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="w-14 h-14 bg-green-50 text-brand-green rounded-2xl flex items-center justify-center shadow-inner">
+                                <i data-lucide="dollar-sign" class="w-7 h-7"></i>
+                            </div>
+                            <span class="text-sm font-bold text-green-600 flex items-center gap-1 bg-green-100 px-3 py-1 rounded-full">
+                                <i data-lucide="trending-up" class="w-4 h-4"></i> +15%
+                            </span>
+                        </div>
+                        <h3 class="text-4xl font-extrabold text-gray-900 mb-1">12.5M <span class="text-lg text-gray-500">FCFA</span></h3>
+                        <p class="text-gray-500 font-medium">Revenus (Ce mois)</p>
+                    </div>
+
+                    <!-- Éleveurs Actifs -->
+                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shadow-inner">
+                                <i data-lucide="store" class="w-7 h-7"></i>
+                            </div>
+                            <span class="text-sm font-bold text-green-600 flex items-center gap-1 bg-green-100 px-3 py-1 rounded-full">
+                                <i data-lucide="trending-up" class="w-4 h-4"></i> +8
+                            </span>
+                        </div>
+                        <h3 class="text-4xl font-extrabold text-gray-900 mb-1">142</h3>
+                        <p class="text-gray-500 font-medium">Éleveurs Premium</p>
+                    </div>
+
+                    <!-- Utilisateurs -->
+                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="w-14 h-14 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center shadow-inner">
+                                <i data-lucide="users" class="w-7 h-7"></i>
+                            </div>
+                            <span class="text-sm font-bold text-green-600 flex items-center gap-1 bg-green-100 px-3 py-1 rounded-full">
+                                <i data-lucide="trending-up" class="w-4 h-4"></i> +45%
+                            </span>
+                        </div>
+                        <h3 class="text-4xl font-extrabold text-gray-900 mb-1">4,890</h3>
+                        <p class="text-gray-500 font-medium">Acheteurs Inscrits</p>
+                    </div>
+
+                    <!-- Annonces -->
+                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="w-14 h-14 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center shadow-inner">
+                                <i data-lucide="megaphone" class="w-7 h-7"></i>
+                            </div>
+                            <span class="text-sm font-bold text-red-600 flex items-center gap-1 bg-red-100 px-3 py-1 rounded-full">
+                                <i data-lucide="trending-down" class="w-4 h-4"></i> -2%
+                            </span>
+                        </div>
+                        <h3 class="text-4xl font-extrabold text-gray-900 mb-1">1,204</h3>
+                        <p class="text-gray-500 font-medium">Annonces Actives</p>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm lg:col-span-2">
+                        <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                            <i data-lucide="bar-chart-2" class="text-brand-green"></i> Croissance des Utilisateurs & Éleveurs
+                        </h3>
+                        <canvas id="growthChart" height="100"></canvas>
+                    </div>
+                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col">
+                        <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                            <i data-lucide="pie-chart" class="text-purple-500"></i> Répartition par Type (Annonces)
+                        </h3>
+                        <div class="flex-1 flex items-center justify-center">
+                            <canvas id="typeChart" width="200" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modération / Actions Récentes -->
+                <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+                    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                        <h3 class="text-xl font-bold text-gray-900">Modération en attente</h3>
+                        <button class="text-brand-green font-semibold hover:text-brand-dark transition-colors hover:underline">Voir tout</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-white text-gray-500 text-xs uppercase tracking-wider border-b border-gray-100">
+                                    <th class="p-4 font-semibold">Type</th>
+                                    <th class="p-4 font-semibold">Titre / Utilisateur</th>
+                                    <th class="p-4 font-semibold">Date</th>
+                                    <th class="p-4 font-semibold">Statut</th>
+                                    <th class="p-4 font-semibold text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 text-sm">
+                                <tr class="hover:bg-gray-50 transition-colors group">
+                                    <td class="p-4">
+                                        <span class="inline-flex items-center gap-1.5 bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">
+                                            <i data-lucide="store" class="w-3.5 h-3.5"></i> Profil Éleveur
+                                        </span>
+                                    </td>
+                                    <td class="p-4 font-medium text-gray-900">Ferme Sokhna<br><span class="text-xs text-gray-500 font-normal">Nouveau compte Premium</span></td>
+                                    <td class="p-4 text-gray-500">Il y a 10 min</td>
+                                    <td class="p-4"><span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold">En attente</span></td>
+                                    <td class="p-4 text-right">
+                                        <div class="flex justify-end gap-2">
+                                            <button class="bg-green-100 text-green-700 hover:bg-green-600 hover:text-white px-3 py-1.5 rounded-lg font-semibold transition-all hover:scale-105 active:scale-95 shadow-sm">Valider</button>
+                                            <button class="bg-red-100 text-red-700 hover:bg-red-600 hover:text-white px-3 py-1.5 rounded-lg font-semibold transition-all hover:scale-105 active:scale-95 shadow-sm">Refuser</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 transition-colors group">
+                                    <td class="p-4">
+                                        <span class="inline-flex items-center gap-1.5 bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-bold">
+                                            <i data-lucide="paw-print" class="w-3.5 h-3.5"></i> Annonce
+                                        </span>
+                                    </td>
+                                    <td class="p-4 font-medium text-gray-900">Taureau Gobra 800kg<br><span class="text-xs text-gray-500 font-normal">Signalement utilisateur</span></td>
+                                    <td class="p-4 text-gray-500">Il y a 1 heure</td>
+                                    <td class="p-4"><span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">Signalé</span></td>
+                                    <td class="p-4 text-right">
+                                        <button class="bg-gray-200 text-gray-700 hover:bg-gray-800 hover:text-white px-4 py-1.5 rounded-lg font-semibold transition-all hover:scale-105 active:scale-95 shadow-sm">Examiner</button>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 transition-colors group">
+                                    <td class="p-4">
+                                        <span class="inline-flex items-center gap-1.5 bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold">
+                                            <i data-lucide="message-square" class="w-3.5 h-3.5"></i> Forum
+                                        </span>
+                                    </td>
+                                    <td class="p-4 font-medium text-gray-900">Sujet: "Vaccin FMD"<br><span class="text-xs text-gray-500 font-normal">Contient mots-clés interdits</span></td>
+                                    <td class="p-4 text-gray-500">Il y a 3 heures</td>
+                                    <td class="p-4"><span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold">En attente</span></td>
+                                    <td class="p-4 text-right">
+                                        <div class="flex justify-end gap-2">
+                                            <button class="bg-green-100 text-green-700 hover:bg-green-600 hover:text-white px-3 py-1.5 rounded-lg font-semibold transition-all hover:scale-105 active:scale-95 shadow-sm">Approuver</button>
+                                            <button class="bg-red-100 text-red-700 hover:bg-red-600 hover:text-white px-3 py-1.5 rounded-lg font-semibold transition-all hover:scale-105 active:scale-95 shadow-sm">Supprimer</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+            
+            <!-- Other Views Placeholders -->
+            <div id="view-users" class="view-section hidden max-w-7xl mx-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-extrabold text-gray-900">Gestion des Utilisateurs</h2>
+                    <div class="flex gap-2">
+                        <span class="bg-brand-green/10 text-brand-green px-3 py-1 rounded-full text-sm font-bold">Actifs: <span id="stat-active">0</span></span>
+                        <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-bold">Bloqués: <span id="stat-blocked">0</span></span>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-100">
+                                    <th class="p-4 font-semibold">Utilisateur</th>
+                                    <th class="p-4 font-semibold">Rôle</th>
+                                    <th class="p-4 font-semibold">Statut</th>
+                                    <th class="p-4 font-semibold">Abonnement</th>
+                                    <th class="p-4 font-semibold text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-users-list" class="divide-y divide-gray-100 text-sm">
+                                <!-- Dynamically populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-eleveurs" class="view-section hidden max-w-7xl mx-auto">
+                <h2 class="text-3xl font-extrabold mb-6 text-gray-900">Éleveurs Vérifiés (KYC)</h2>
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-100">
+                                    <th class="p-4 font-semibold">Ferme / Nom</th>
+                                    <th class="p-4 font-semibold">Email</th>
+                                    <th class="p-4 font-semibold">Statut KYC</th>
+                                    <th class="p-4 font-semibold text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-eleveurs-list" class="divide-y divide-gray-100 text-sm">
+                                <!-- Dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-animaux" class="view-section hidden max-w-7xl mx-auto">
+                <h2 class="text-3xl font-extrabold mb-6 text-gray-900">Modération des Annonces</h2>
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-100">
+                                    <th class="p-4 font-semibold">Annonce (Image & Titre)</th>
+                                    <th class="p-4 font-semibold">Vendeur</th>
+                                    <th class="p-4 font-semibold">Prix</th>
+                                    <th class="p-4 font-semibold text-right">Modération</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-animaux-list" class="divide-y divide-gray-100 text-sm">
+                                <!-- Dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-forum" class="view-section hidden max-w-7xl mx-auto">
+                <h2 class="text-3xl font-extrabold mb-6 text-gray-900">Support Client & Tickets</h2>
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-100">
+                                    <th class="p-4 font-semibold">Client</th>
+                                    <th class="p-4 font-semibold">Sujet du Ticket</th>
+                                    <th class="p-4 font-semibold">Date</th>
+                                    <th class="p-4 font-semibold">Statut</th>
+                                    <th class="p-4 font-semibold text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-tickets-list" class="divide-y divide-gray-100 text-sm">
+                                <!-- Dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-foires" class="view-section hidden max-w-7xl mx-auto">
+                <h2 class="text-3xl font-extrabold mb-6 text-gray-900">Gestion Foires (Live)</h2>
+                <div class="bg-white p-12 rounded-3xl shadow-sm text-center border border-gray-100">
+                    <i data-lucide="video" class="w-16 h-16 mx-auto mb-4 text-gray-300"></i>
+                    <p class="text-gray-500 text-lg font-medium">Le module de foires en direct est en cours de développement.</p>
+                </div>
+            </div>
+
+            <div id="view-paiements" class="view-section hidden max-w-7xl mx-auto">
+                <h2 class="text-3xl font-extrabold mb-6 text-gray-900">Suivi des Transactions</h2>
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-100">
+                                    <th class="p-4 font-semibold">Date</th>
+                                    <th class="p-4 font-semibold">Utilisateur</th>
+                                    <th class="p-4 font-semibold">Type de Paiement</th>
+                                    <th class="p-4 font-semibold">Montant (FCFA)</th>
+                                    <th class="p-4 font-semibold text-right">Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-transactions-list" class="divide-y divide-gray-100 text-sm">
+                                <!-- Dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-settings" class="view-section hidden max-w-7xl mx-auto">
+                <h2 class="text-3xl font-extrabold mb-6 text-gray-900">Paramètres Système</h2>
+                
+                <div class="flex flex-col md:flex-row gap-8">
+                    <!-- Sous-menu Paramètres -->
+                    <div class="w-full md:w-64 shrink-0 flex flex-col gap-2">
+                        <button onclick="switchSettingTab('general')" id="set-tab-general" class="setting-nav w-full flex items-center gap-3 px-4 py-3 bg-brand-green/10 text-brand-green rounded-xl font-bold transition-all text-left">
+                            <i data-lucide="globe" class="w-5 h-5"></i> Général
+                        </button>
+                        <button onclick="switchSettingTab('finance')" id="set-tab-finance" class="setting-nav w-full flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-xl font-medium transition-all text-left">
+                            <i data-lucide="dollar-sign" class="w-5 h-5"></i> Tarification & Taxes
+                        </button>
+                        <button onclick="switchSettingTab('security')" id="set-tab-security" class="setting-nav w-full flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-xl font-medium transition-all text-left">
+                            <i data-lucide="shield" class="w-5 h-5"></i> Sécurité
+                        </button>
+                    </div>
+
+                    <!-- Contenu des paramètres -->
+                    <div class="flex-1 bg-white rounded-3xl shadow-sm border border-gray-100 p-8 min-h-[500px]">
+                        
+                        <!-- Panneau Général -->
+                        <div id="set-panel-general" class="setting-panel block space-y-6">
+                            <h3 class="text-xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4">Paramètres Généraux</h3>
+                            
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Nom de la plateforme</label>
+                                <input type="text" value="Coin des Éleveurs" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:ring-2 focus:ring-brand-green focus:border-transparent outline-none transition-all">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Email de contact (Support)</label>
+                                <input type="email" value="support@coindeseleveurs.sn" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:ring-2 focus:ring-brand-green focus:border-transparent outline-none transition-all">
+                            </div>
+
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200">
+                                <div>
+                                    <h4 class="font-bold text-gray-900">Mode Maintenance</h4>
+                                    <p class="text-sm text-gray-500 mt-1">Désactive l'accès public au site (Affiche une page "En travaux").</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Panneau Tarification -->
+                        <div id="set-panel-finance" class="setting-panel hidden space-y-6">
+                            <h3 class="text-xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4">Tarification & Taxes</h3>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Commission sur ventes (%)</label>
+                                    <div class="relative">
+                                        <input type="number" value="5" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 pr-10 text-gray-900 focus:ring-2 focus:ring-brand-green outline-none">
+                                        <span class="absolute right-4 top-3.5 text-gray-400 font-bold">%</span>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Abonnement Mensuel Éleveur</label>
+                                    <div class="relative">
+                                        <input type="number" value="15000" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 pr-16 text-gray-900 focus:ring-2 focus:ring-brand-green outline-none">
+                                        <span class="absolute right-4 top-3.5 text-gray-400 font-bold">FCFA</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200 mt-6">
+                                <div>
+                                    <h4 class="font-bold text-gray-900">Activer les paiements Mobile Money</h4>
+                                    <p class="text-sm text-gray-500 mt-1">Autoriser Wave, Orange Money et Free Money sur la plateforme.</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer" checked>
+                                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-green"></div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Panneau Sécurité -->
+                        <div id="set-panel-security" class="setting-panel hidden space-y-6">
+                            <h3 class="text-xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4">Sécurité & Accès</h3>
+                            
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">Changer le mot de passe Administrateur</label>
+                                <input type="password" placeholder="Nouveau mot de passe" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:ring-2 focus:ring-brand-green mb-3 outline-none">
+                                <input type="password" placeholder="Confirmer le mot de passe" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:ring-2 focus:ring-brand-green outline-none">
+                            </div>
+
+                            <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl flex items-start gap-3 mt-6">
+                                <i data-lucide="info" class="w-5 h-5 text-blue-500 mt-0.5"></i>
+                                <div>
+                                    <h4 class="font-bold text-blue-900 text-sm">Dernière connexion</h4>
+                                    <p class="text-blue-700 text-sm mt-1">Adresse IP: 197.234.12.98 (Dakar, Sénégal) - Il y a 10 minutes</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bouton global d'enregistrement -->
+                        <div class="pt-8 mt-8 border-t border-gray-100 flex justify-end">
+                            <button onclick="alert('Paramètres enregistrés avec succès !')" class="bg-brand-green text-white px-8 py-3 rounded-xl font-bold hover:bg-brand-dark transition-all shadow-lg shadow-brand-green/30 hover:scale-105 active:scale-95 flex items-center gap-2">
+                                <i data-lucide="save" class="w-5 h-5"></i> Enregistrer les modifications
+                            </button>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Init Icons and Charts -->
+    <script>
+        const user = requireAuth(['admin']);
+        
+        lucide.createIcons();
+
+        function switchTab(tabId) {
+            // Hide all views
+            document.querySelectorAll('.view-section').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('block');
+            });
+            
+            // Reset all nav links styles
+            document.querySelectorAll('.nav-link').forEach(el => {
+                el.classList.remove('bg-white/10', 'text-white');
+                el.classList.add('text-gray-400');
+            });
+
+            // Show selected view
+            const selectedView = document.getElementById('view-' + tabId);
+            if(selectedView) {
+                selectedView.classList.remove('hidden');
+                selectedView.classList.add('block');
+                if (tabId === 'users') renderAdminUsers();
+                if (tabId === 'eleveurs') renderAdminEleveurs();
+                if (tabId === 'animaux') renderAdminAnimaux();
+                if (tabId === 'forum') renderAdminTickets();
+                if (tabId === 'paiements') renderAdminTransactions();
+            }
+
+            // Highlight selected link
+            const selectedLink = document.getElementById('link-' + tabId);
+            if(selectedLink) {
+                selectedLink.classList.remove('text-gray-400');
+                selectedLink.classList.add('bg-white/10', 'text-white');
+            }
+        }
+
+        function renderAdminUsers() {
+            const users = DB.getAllUsers();
+            const list = document.getElementById('admin-users-list');
+            if(!list) return;
+            
+            list.innerHTML = '';
+            
+            let activeCount = 0;
+            let blockedCount = 0;
+
+            users.forEach(u => {
+                if(u.role === 'admin') return; // Ne pas afficher l'admin dans la liste
+
+                if(u.status === 'blocked') blockedCount++;
+                else activeCount++;
+
+                const roleColors = {
+                    'eleveur': 'bg-blue-100 text-blue-700',
+                    'user': 'bg-gray-100 text-gray-700',
+                    'veterinaire': 'bg-purple-100 text-purple-700'
+                };
+                
+                const statusBadge = u.status === 'blocked' 
+                    ? '<span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold flex inline-flex items-center gap-1"><i data-lucide="ban" class="w-3 h-3"></i>Bloqué</span>'
+                    : '<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold flex inline-flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i>Actif</span>';
+                
+                const subBadge = u.subscription === 'unlimited'
+                    ? '<span class="bg-gold/20 text-yellow-700 border border-gold/50 px-3 py-1 rounded-full text-xs font-bold flex inline-flex items-center gap-1"><i data-lucide="star" class="w-3 h-3 text-gold fill-gold"></i>VIP Illimité</span>'
+                    : '<span class="text-gray-500 text-xs font-medium">Standard</span>';
+
+                const blockBtnText = u.status === 'blocked' ? 'Débloquer' : 'Bloquer';
+                const blockBtnClass = u.status === 'blocked' ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-red-50 text-red-600 hover:bg-red-100';
+
+                const subBtnText = u.subscription === 'unlimited' ? 'Retirer VIP' : 'Donner VIP';
+                const subBtnClass = u.subscription === 'unlimited' ? 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200' : 'bg-yellow-50 text-yellow-700 border border-yellow-200 hover:bg-yellow-100';
+
+                list.innerHTML += `
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="p-4">
+                            <div class="font-bold text-gray-900">${u.name}</div>
+                            <div class="text-xs text-gray-500">${u.email}</div>
+                        </td>
+                        <td class="p-4">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${roleColors[u.role] || 'bg-gray-100'} capitalize">${u.role}</span>
+                        </td>
+                        <td class="p-4">${statusBadge}</td>
+                        <td class="p-4">${subBadge}</td>
+                        <td class="p-4 text-right">
+                            <div class="flex justify-end gap-2">
+                                <button onclick="handleUserAction('vip', '${u.id}')" class="${subBtnClass} px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm">${subBtnText}</button>
+                                <button onclick="handleUserAction('block', '${u.id}')" class="${blockBtnClass} px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm">${blockBtnText}</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('stat-active').textContent = activeCount;
+            document.getElementById('stat-blocked').textContent = blockedCount;
+            lucide.createIcons();
+        }
+
+        function handleUserAction(action, userId) {
+            if (action === 'block') {
+                if (confirm('Êtes-vous sûr de vouloir changer le statut de blocage de cet utilisateur ?')) {
+                    DB.toggleUserStatus(userId);
+                    renderAdminUsers(); // refresh list
+                }
+            } else if (action === 'vip') {
+                if (confirm("Voulez-vous modifier l'accès VIP (Illimité) pour cet utilisateur ?")) {
+                    DB.grantUnlimited(userId);
+                    renderAdminUsers(); // refresh list
+                }
+            } else if (action === 'verify') {
+                if (confirm("Valider cet éleveur de manière officielle (KYC) ?")) {
+                    DB.verifyEleveur(userId);
+                    renderAdminEleveurs(); // refresh list
+                }
+            }
+        }
+
+        function renderAdminEleveurs() {
+            const users = DB.getAllUsers().filter(u => u.role === 'eleveur');
+            const list = document.getElementById('admin-eleveurs-list');
+            if(!list) return;
+            list.innerHTML = '';
+            
+            users.forEach(u => {
+                const badge = u.isVerified 
+                    ? '<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold"><i data-lucide="shield-check" class="w-3 h-3 inline mr-1"></i>Vérifié</span>' 
+                    : '<span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold"><i data-lucide="clock" class="w-3 h-3 inline mr-1"></i>En attente</span>';
+                
+                const btn = u.isVerified 
+                    ? '<button disabled class="bg-gray-100 text-gray-400 px-4 py-2 rounded-lg text-xs font-bold cursor-not-allowed">Déjà validé</button>'
+                    : `<button onclick="handleUserAction('verify', '${u.id}')" class="bg-brand-green text-white hover:bg-brand-dark px-4 py-2 rounded-lg text-xs font-bold shadow-md shadow-brand-green/30 hover:scale-105 active:scale-95 transition-all">Valider KYC</button>`;
+
+                list.innerHTML += `
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="p-4 font-bold text-gray-900">${u.farmName || u.name}</td>
+                        <td class="p-4 text-gray-500">${u.email}</td>
+                        <td class="p-4">${badge}</td>
+                        <td class="p-4 text-right">${btn}</td>
+                    </tr>
+                `;
+            });
+            lucide.createIcons();
+        }
+
+        function handleAnimalAction(action, animalId) {
+            if (action === 'delete') {
+                if (confirm("Voulez-vous vraiment supprimer cette annonce ?")) {
+                    DB.deleteAnimal(animalId);
+                    renderAdminAnimaux();
+                }
+            }
+        }
+
+        function renderAdminAnimaux() {
+            const animals = DB.get('animals') || [];
+            const users = DB.getAllUsers();
+            const list = document.getElementById('admin-animaux-list');
+            if(!list) return;
+            list.innerHTML = '';
+
+            animals.forEach(a => {
+                const seller = users.find(u => u.id === a.eleveurId);
+                const sellerName = seller ? (seller.farmName || seller.name) : 'Inconnu';
+                
+                list.innerHTML += `
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="p-4">
+                            <div class="flex items-center gap-4">
+                                <img src="${a.image}" alt="Animal" class="w-12 h-12 rounded-xl object-cover shadow-sm">
+                                <div>
+                                    <p class="font-bold text-gray-900 capitalize">${a.breed}</p>
+                                    <p class="text-xs text-gray-500 capitalize">${a.type} • ${a.location}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-4 text-gray-700 font-medium">${sellerName}</td>
+                        <td class="p-4 text-brand-green font-bold">${a.price.toLocaleString('fr-FR')} FCFA</td>
+                        <td class="p-4 text-right">
+                            <button onclick="handleAnimalAction('delete', '${a.id}')" class="bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 px-3 py-2 rounded-lg text-xs font-bold transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            lucide.createIcons();
+        }
+
+        function handleTicketAction(ticketId) {
+            if (confirm("Marquer ce ticket comme résolu ?")) {
+                DB.resolveTicket(ticketId);
+                renderAdminTickets();
+            }
+        }
+
+        function renderAdminTickets() {
+            const tickets = DB.getAllTickets();
+            const list = document.getElementById('admin-tickets-list');
+            if(!list) return;
+            list.innerHTML = '';
+
+            tickets.forEach(t => {
+                const badge = t.status === 'resolved' 
+                    ? '<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">Résolu</span>' 
+                    : '<span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">Ouvert</span>';
+                
+                const btn = t.status === 'resolved' 
+                    ? '<button disabled class="text-gray-400 font-bold text-xs"><i data-lucide="check" class="w-4 h-4"></i></button>'
+                    : `<button onclick="handleTicketAction('${t.id}')" class="bg-brand-green text-white hover:bg-brand-dark px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md shadow-brand-green/30">Résoudre</button>`;
+
+                list.innerHTML += `
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="p-4 font-medium text-gray-900">${t.userName}</td>
+                        <td class="p-4">
+                            <p class="font-bold text-gray-900">${t.subject}</p>
+                            <p class="text-xs text-gray-500 truncate max-w-[250px]">${t.message}</p>
+                        </td>
+                        <td class="p-4 text-gray-500 text-sm">${t.date}</td>
+                        <td class="p-4">${badge}</td>
+                        <td class="p-4 text-right">${btn}</td>
+                    </tr>
+                `;
+            });
+            lucide.createIcons();
+        }
+
+        function renderAdminTransactions() {
+            const trans = DB.getAllTransactions();
+            const list = document.getElementById('admin-transactions-list');
+            if(!list) return;
+            list.innerHTML = '';
+
+            trans.forEach(t => {
+                const badge = t.status === 'completed' 
+                    ? '<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold"><i data-lucide="check" class="w-3 h-3 inline mr-1"></i>Réussi</span>' 
+                    : '<span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold"><i data-lucide="clock" class="w-3 h-3 inline mr-1"></i>En attente</span>';
+
+                list.innerHTML += `
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="p-4 text-gray-500 font-medium">${t.date}</td>
+                        <td class="p-4 font-bold text-gray-900">${t.userName}</td>
+                        <td class="p-4 text-gray-600">${t.type}</td>
+                        <td class="p-4 font-bold ${t.amount > 10000 ? 'text-brand-green' : 'text-gray-900'}">${t.amount.toLocaleString('fr-FR')}</td>
+                        <td class="p-4 text-right">${badge}</td>
+                    </tr>
+                `;
+            });
+            lucide.createIcons();
+        }
+
+        function switchSettingTab(tabName) {
+            // Hide all setting panels
+            document.querySelectorAll('.setting-panel').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('block');
+            });
+            
+            // Reset all setting nav links
+            document.querySelectorAll('.setting-nav').forEach(el => {
+                el.classList.remove('bg-brand-green/10', 'text-brand-green');
+                el.classList.add('text-gray-600');
+            });
+
+            // Show selected panel
+            const selectedPanel = document.getElementById('set-panel-' + tabName);
+            if(selectedPanel) {
+                selectedPanel.classList.remove('hidden');
+                selectedPanel.classList.add('block');
+            }
+
+            // Highlight selected tab
+            const selectedTab = document.getElementById('set-tab-' + tabName);
+            if(selectedTab) {
+                selectedTab.classList.remove('text-gray-600');
+                selectedTab.classList.add('bg-brand-green/10', 'text-brand-green');
+            }
+        }
+
+        // Chart.js Configuration
+        const ctxGrowth = document.getElementById('growthChart').getContext('2d');
+        new Chart(ctxGrowth, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
+                datasets: [
+                    {
+                        label: 'Acheteurs',
+                        data: [1200, 1900, 3000, 3500, 4200, 4890],
+                        borderColor: '#3b82f6', // blue
+                        tension: 0.4,
+                        borderWidth: 3
+                    },
+                    {
+                        label: 'Éleveurs',
+                        data: [20, 50, 80, 110, 130, 142],
+                        borderColor: '#1E8E3E', // brand green
+                        tension: 0.4,
+                        borderWidth: 3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    }
+                }
+            }
+        });
+
+        const ctxType = document.getElementById('typeChart').getContext('2d');
+        new Chart(ctxType, {
+            type: 'doughnut',
+            data: {
+                labels: ['Bovins', 'Ovins', 'Caprins', 'Volailles'],
+                datasets: [{
+                    data: [45, 35, 10, 10],
+                    backgroundColor: ['#1E8E3E', '#FBBF24', '#3b82f6', '#f97316'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

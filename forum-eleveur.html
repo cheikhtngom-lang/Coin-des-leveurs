@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forum des Éleveurs - Coin des Éleveurs</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            green: '#1E8E3E',
+                            light: '#4ade80',
+                            dark: '#14532d',
+                        },
+                        gold: '#FBBF24',
+                        surface: '#f8fafc',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="db.js"></script>
+    <script>
+        // Le forum est public pour lecture, mais on récupère l'user connecté
+        const user = JSON.parse(localStorage.getItem('currentUser'));
+    </script>
+</head>
+<body class="font-sans bg-surface text-gray-800 antialiased h-screen flex flex-col overflow-hidden">
+
+    <!-- Topbar -->
+    <header class="h-20 bg-white border-b border-gray-200 flex items-center justify-between px-6 z-20 shadow-sm shrink-0">
+        <div class="flex items-center gap-6">
+            <div class="flex items-center gap-2 cursor-pointer hover:scale-105 active:scale-95 transition-all duration-300" onclick="window.location.href='dashboard-eleveur.html'">
+                <div class="w-10 h-10 rounded-xl bg-brand-green flex items-center justify-center shadow-lg shadow-brand-green/30">
+                    <i data-lucide="leaf" class="text-white w-6 h-6"></i>
+                </div>
+                <span class="font-bold text-2xl hidden sm:block">Coin des <span class="text-brand-green">Éleveurs</span></span>
+            </div>
+            <div class="h-8 w-px bg-gray-200 hidden md:block"></div>
+            <h1 class="text-xl font-bold text-gray-900 hidden md:block flex items-center gap-2">
+                <i data-lucide="message-square" class="text-brand-green inline"></i> Le Forum PRO
+            </h1>
+        </div>
+
+        <div class="flex items-center gap-6">
+            <!-- Global Search -->
+            <div class="hidden lg:flex items-center bg-gray-100 rounded-full px-4 py-2 border-transparent focus-within:ring-2 focus-within:ring-brand-green focus-within:bg-white transition-all w-80 shadow-inner">
+                <i data-lucide="search" class="w-4 h-4 text-gray-400"></i>
+                <input type="text" placeholder="Chercher un sujet, un conseil..." class="bg-transparent border-none focus:outline-none text-sm ml-2 w-full text-gray-700">
+            </div>
+
+            <button onclick="openNewTopicModal()" class="bg-brand-green hover:bg-brand-dark text-white px-5 py-2.5 rounded-full font-bold shadow-lg shadow-brand-green/30 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-2">
+                <i data-lucide="plus" class="w-4 h-4"></i> Nouveau Sujet
+            </button>
+            
+            <div class="flex items-center gap-3 cursor-pointer hover:scale-105 active:scale-95 transition-all duration-300" id="header-user-badge">
+                <img src="https://ui-avatars.com/api/?name=Anonyme&background=1E8E3E&color=fff" id="header-avatar" alt="Avatar" class="w-10 h-10 rounded-full border-2 border-brand-green">
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex overflow-hidden">
+        
+        <!-- Sidebar Categories -->
+        <aside class="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col h-full z-10 shadow-sm overflow-y-auto">
+            <div class="p-6">
+                <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Catégories</h3>
+                <div class="space-y-2">
+                    <a href="#" onclick="filterForumByCategory('Tout voir', this)" class="category-link flex items-center justify-between p-3 bg-brand-green/10 text-brand-green rounded-xl font-semibold hover:scale-105 active:scale-95 transition-all duration-300">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="globe" class="w-5 h-5"></i> Tout voir
+                        </div>
+                    </a>
+                    <a href="#" onclick="filterForumByCategory('Santé Animale', this)" class="category-link flex items-center justify-between p-3 text-gray-600 hover:bg-gray-50 hover:text-brand-green rounded-xl font-semibold hover:scale-105 active:scale-95 transition-all duration-300">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="activity" class="w-5 h-5 text-red-500"></i> Santé Animale
+                        </div>
+                    </a>
+                    <a href="#" onclick="filterForumByCategory('Nutrition', this)" class="category-link flex items-center justify-between p-3 text-gray-600 hover:bg-gray-50 hover:text-brand-green rounded-xl font-semibold hover:scale-105 active:scale-95 transition-all duration-300">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="wheat" class="w-5 h-5 text-yellow-500"></i> Nutrition
+                        </div>
+                    </a>
+                    <a href="#" onclick="filterForumByCategory('Prix du Marché', this)" class="category-link flex items-center justify-between p-3 text-gray-600 hover:bg-gray-50 hover:text-brand-green rounded-xl font-semibold hover:scale-105 active:scale-95 transition-all duration-300">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="trending-up" class="w-5 h-5 text-blue-500"></i> Prix du Marché
+                        </div>
+                    </a>
+                    <a href="#" onclick="filterForumByCategory('Entraide', this)" class="category-link flex items-center justify-between p-3 text-gray-600 hover:bg-gray-50 hover:text-brand-green rounded-xl font-semibold hover:scale-105 active:scale-95 transition-all duration-300">
+                        <div class="flex items-center gap-3">
+                            <i data-lucide="help-circle" class="w-5 h-5 text-purple-500"></i> Entraide
+                        </div>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="p-6 mt-auto border-t border-gray-100">
+                <div class="bg-gradient-to-br from-brand-green to-brand-light rounded-2xl p-4 text-white shadow-lg shadow-brand-green/20">
+                    <h4 class="font-bold mb-1">Règles du Forum</h4>
+                    <p class="text-xs text-brand-green/20 text-white/80 mb-3">Respect, entraide et professionnalisme.</p>
+                    <button class="w-full bg-white/20 hover:bg-white/30 backdrop-blur text-white text-xs font-bold py-2 rounded-xl transition-colors">Lire la charte</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Threads Feed -->
+        <main class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 bg-surface">
+            <div class="max-w-4xl mx-auto space-y-4">
+                
+                <!-- Filters -->
+                <div class="flex items-center justify-between bg-white p-2 rounded-full border border-gray-200 shadow-sm mb-6">
+                    <div class="flex gap-1">
+                        <button class="px-5 py-2 bg-gray-900 text-white rounded-full text-sm font-bold shadow-md hover:scale-105 active:scale-95 transition-all duration-300">Récents</button>
+                        <button class="px-5 py-2 text-gray-600 hover:bg-gray-100 rounded-full text-sm font-semibold transition-colors hover:scale-105 active:scale-95">Populaires</button>
+                        <button class="px-5 py-2 text-gray-600 hover:bg-gray-100 rounded-full text-sm font-semibold transition-colors hover:scale-105 active:scale-95">Sans réponse</button>
+                    </div>
+                </div>
+
+                <!-- Feed Container (Dynamic) -->
+                <div id="forum-feed" class="space-y-4">
+                    <!-- Injected by JS -->
+                </div>
+
+            </div>
+        </main>
+
+        <!-- Right Sidebar (Trending/Top Members) -->
+        <aside class="w-72 bg-gray-50 border-l border-gray-200 hidden lg:block overflow-y-auto p-6">
+            <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm mb-6">
+                <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <i data-lucide="trending-up" class="w-5 h-5 text-brand-green"></i> Tendances
+                </h3>
+                <div class="space-y-4">
+                    <a href="#" class="block group">
+                        <h4 class="text-sm font-bold text-gray-800 group-hover:text-brand-green transition-colors">#Tabaski2026</h4>
+                        <p class="text-xs text-gray-500 mt-1">125 discussions cette semaine</p>
+                    </a>
+                    <a href="#" class="block group">
+                        <h4 class="text-sm font-bold text-gray-800 group-hover:text-brand-green transition-colors">#AlimentationBovins</h4>
+                        <p class="text-xs text-gray-500 mt-1">45 discussions cette semaine</p>
+                    </a>
+                    <a href="#" class="block group">
+                        <h4 class="text-sm font-bold text-gray-800 group-hover:text-brand-green transition-colors">#Vaccination</h4>
+                        <p class="text-xs text-gray-500 mt-1">30 discussions cette semaine</p>
+                    </a>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+                <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <i data-lucide="award" class="w-5 h-5 text-gold"></i> Top Contributeurs
+                </h3>
+                <div class="space-y-4">
+                    <div class="flex items-center gap-3">
+                        <img src="https://ui-avatars.com/api/?name=Elevage+Baol&background=FBBF24&color=fff" class="w-8 h-8 rounded-full border border-gray-200">
+                        <div>
+                            <p class="text-sm font-bold text-gray-900">Élevage Baol</p>
+                            <p class="text-xs text-brand-green font-semibold">Expert • 450 pts</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <img src="https://ui-avatars.com/api/?name=Moussa+Diop&background=3b82f6&color=fff" class="w-8 h-8 rounded-full border border-gray-200">
+                        <div>
+                            <p class="text-sm font-bold text-gray-900">Moussa Diop</p>
+                            <p class="text-xs text-brand-green font-semibold">Vétérinaire • 320 pts</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <!-- Modal Nouveau Sujet -->
+    <div id="newTopicModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center px-4">
+        <div class="bg-white w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl">
+            <div class="flex justify-between items-center p-6 border-b border-gray-100">
+                <h3 class="text-xl font-bold text-gray-900">Lancer une nouvelle discussion</h3>
+                <button onclick="closeNewTopicModal()" class="text-gray-400 hover:text-gray-700 transition-colors">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <form id="newTopicForm" class="space-y-4">
+                    <div>
+                        <div class="flex justify-between items-end mb-1">
+                            <label class="block text-sm font-bold text-gray-700">Titre de la discussion</label>
+                            <button type="button" onclick="startDictation(this, 'topic-title')" class="text-brand-green hover:text-brand-dark transition-colors flex items-center gap-1 bg-brand-green/10 px-2 py-1 rounded-lg" title="Dicter le titre">
+                                <i data-lucide="mic" class="w-4 h-4"></i> <span class="text-[10px] font-bold uppercase tracking-wider">Vocal</span>
+                            </button>
+                        </div>
+                        <input type="text" id="topic-title" required placeholder="Soyez clair et précis..." class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-brand-green focus:border-brand-green">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Catégorie</label>
+                        <select id="topic-category" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-brand-green focus:border-brand-green">
+                            <option value="Santé Animale|red">Santé Animale</option>
+                            <option value="Nutrition|yellow">Nutrition</option>
+                            <option value="Prix du Marché|blue">Prix du Marché</option>
+                            <option value="Entraide|purple">Entraide</option>
+                        </select>
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-end mb-1">
+                            <label class="block text-sm font-bold text-gray-700">Votre message</label>
+                            <button type="button" onclick="startDictation(this, 'topic-content')" class="text-brand-green hover:text-brand-dark transition-colors flex items-center gap-1 bg-brand-green/10 px-2 py-1 rounded-lg" title="Dicter la description">
+                                <i data-lucide="mic" class="w-4 h-4"></i> <span class="text-[10px] font-bold uppercase tracking-wider">Vocal</span>
+                            </button>
+                        </div>
+                        <textarea id="topic-content" required rows="5" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-brand-green focus:border-brand-green" placeholder="Décrivez votre question ou partagez votre conseil..."></textarea>
+                    </div>
+                    <div class="pt-4 flex justify-end gap-3">
+                        <button type="button" onclick="closeNewTopicModal()" class="px-5 py-2.5 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">Annuler</button>
+                        <button type="submit" class="px-5 py-2.5 rounded-xl font-bold text-white bg-brand-green hover:bg-brand-dark transition-colors shadow-lg flex items-center gap-2">
+                            <i data-lucide="send" class="w-4 h-4"></i> Publier
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Initialization -->
+    <script>
+        lucide.createIcons();
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (user) {
+                document.getElementById('header-avatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.farmName)}&background=1E8E3E&color=fff`;
+            }
+            renderForum();
+        });
+
+        function filterForumByCategory(category, btnElement) {
+            document.querySelectorAll('.category-link').forEach(link => {
+                link.classList.remove('bg-brand-green/10', 'text-brand-green');
+                link.classList.add('text-gray-600', 'hover:bg-gray-50');
+            });
+            btnElement.classList.remove('text-gray-600', 'hover:bg-gray-50');
+            btnElement.classList.add('bg-brand-green/10', 'text-brand-green');
+            
+            // Re-render
+            window.currentForumFilter = category;
+            renderForum();
+        }
+
+        function renderForum() {
+            const feed = document.getElementById('forum-feed');
+            let posts = DB.getAllForumPosts();
+            const users = DB.get('users');
+            
+            const filterCategory = window.currentForumFilter || 'Tout voir';
+            if (filterCategory !== 'Tout voir') {
+                posts = posts.filter(p => p.category === filterCategory);
+            }
+
+            if(posts.length === 0) {
+                feed.innerHTML = `<div class="text-center py-10 text-gray-500">Aucun sujet pour le moment. Soyez le premier !</div>`;
+                return;
+            }
+
+            feed.innerHTML = posts.map(post => {
+                const author = users.find(u => u.id === post.eleveurId) || { name: 'Anonyme' };
+                const authorName = author.farmName || author.name;
+                const color = post.categoryColor || 'gray';
+                
+                return `
+                <div class="bg-white rounded-3xl p-5 border border-gray-100 shadow-sm hover:shadow-xl hover:border-brand-green/30 transition-all duration-300 cursor-pointer group">
+                    <div class="flex gap-4">
+                        <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=f3f4f6&color=374151" alt="Avatar" class="w-12 h-12 rounded-full shrink-0 group-hover:scale-110 transition-transform border border-gray-200">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="bg-${color}-100 text-${color}-600 text-xs font-bold px-2 py-0.5 rounded-full uppercase">${post.category}</span>
+                                <span class="text-gray-400 text-xs font-medium">${post.time}</span>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 group-hover:text-brand-green transition-colors mb-2">${post.title}</h3>
+                            <p class="text-gray-600 text-sm mb-4 line-clamp-2">${post.content}</p>
+                            
+                            <div class="flex items-center gap-6 text-gray-500 text-sm font-medium">
+                                <button type="button" onclick="event.stopPropagation(); toggleReplies('${post.id}')" class="flex items-center gap-1.5 hover:text-brand-green transition-colors focus:outline-none">
+                                    <i data-lucide="message-circle" class="w-4 h-4"></i> <span>${post.replies}</span> réponses
+                                </button>
+                                <button type="button" onclick="event.stopPropagation(); likePost(this, '${post.id}')" class="flex items-center gap-1.5 hover:text-red-500 transition-colors focus:outline-none">
+                                    <i data-lucide="heart" class="w-4 h-4"></i> <span>${post.likes || 0}</span> J'aime
+                                </button>
+                                <button type="button" class="flex items-center gap-1.5 ml-auto hover:text-gray-900 transition-colors focus:outline-none">
+                                    <i data-lucide="share-2" class="w-4 h-4"></i> Partager
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Section Réponses (Cachée par défaut) -->
+                    <div id="replies-${post.id}" class="hidden mt-4 pt-4 border-t border-gray-100" onclick="event.stopPropagation();">
+                        <div class="space-y-3 mb-4 max-h-60 overflow-y-auto pr-2 hide-scrollbar">
+                            ${(post.repliesList || []).map(r => `
+                                <div class="flex gap-3">
+                                    <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(r.authorName)}&background=e5e7eb&color=374151" class="w-8 h-8 rounded-full">
+                                    <div class="bg-gray-50 rounded-2xl rounded-tl-none p-3 text-sm flex-1">
+                                        <p class="font-bold text-gray-900">${r.authorName} <span class="font-normal text-gray-400 text-xs ml-2">${r.time}</span></p>
+                                        <p class="text-gray-700 mt-1">${r.content}</p>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="flex gap-2 items-center">
+                            <div class="flex-1 relative flex items-center">
+                                <input type="text" id="reply-input-${post.id}" placeholder="Écrire une réponse..." class="w-full bg-gray-50 border border-gray-200 rounded-full pl-4 pr-12 py-2 text-sm focus:ring-brand-green focus:border-brand-green outline-none" onkeypress="if(event.key === 'Enter') submitReply('${post.id}')">
+                                <button type="button" onclick="startDictation(this, 'reply-input-${post.id}')" class="absolute right-2 text-gray-400 hover:text-brand-green transition-colors p-1.5 rounded-full hover:bg-gray-200" title="Dicter">
+                                    <i data-lucide="mic" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                            <button onclick="submitReply('${post.id}')" class="bg-brand-green text-white w-9 h-9 flex items-center justify-center rounded-full text-sm font-bold hover:bg-brand-dark transition-colors shadow-sm hover:scale-105 active:scale-95 shrink-0">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+                `;
+            }).join('');
+            
+            lucide.createIcons();
+        }
+
+        function openNewTopicModal() {
+            if(!user) {
+                alert("Vous devez être connecté pour publier sur le forum.");
+                window.location.href = 'login.html';
+                return;
+            }
+            document.getElementById('newTopicModal').classList.remove('hidden');
+        }
+
+        function closeNewTopicModal() {
+            document.getElementById('newTopicModal').classList.add('hidden');
+        }
+
+        document.getElementById('newTopicForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const catVal = document.getElementById('topic-category').value.split('|');
+            
+            DB.addForumPost({
+                eleveurId: user.id,
+                title: document.getElementById('topic-title').value,
+                category: catVal[0],
+                categoryColor: catVal[1],
+                content: document.getElementById('topic-content').value
+            });
+
+            closeNewTopicModal();
+            document.getElementById('newTopicForm').reset();
+            renderForum();
+        });
+
+        function likePost(btn, postId) {
+            DB.likeForumPost(postId);
+            const countSpan = btn.querySelector('span');
+            countSpan.innerText = parseInt(countSpan.innerText) + 1;
+            btn.classList.add('text-red-500');
+            btn.classList.remove('text-gray-500');
+            btn.querySelector('svg').classList.add('fill-current');
+            btn.disabled = true;
+        }
+
+        function toggleReplies(postId) {
+            const repliesDiv = document.getElementById(`replies-${postId}`);
+            if (repliesDiv.classList.contains('hidden')) {
+                repliesDiv.classList.remove('hidden');
+            } else {
+                repliesDiv.classList.add('hidden');
+            }
+        }
+
+        function submitReply(postId) {
+            if(!user) {
+                alert("Connectez-vous pour répondre.");
+                return;
+            }
+            const input = document.getElementById(`reply-input-${postId}`);
+            const content = input.value.trim();
+            if (!content) return;
+            
+            DB.addForumReply(postId, {
+                authorName: user.farmName || user.name,
+                content: content
+            });
+            
+            // On pourrait recharger tout le forum avec renderForum(), 
+            // mais on va juste le faire pour faire simple et propre
+            renderForum();
+            
+            // Ré-ouvrir les réponses du post qu'on vient de commenter
+            setTimeout(() => {
+                document.getElementById(`replies-${postId}`).classList.remove('hidden');
+            }, 50);
+        }
+
+        function startDictation(btn, targetId) {
+            // Si l'enregistrement est déjà en cours, on l'arrête manuellement
+            if (btn.isRecording) {
+                if (btn.recognition) {
+                    btn.recognition.stop();
+                }
+                return;
+            }
+
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert("Votre navigateur ne supporte pas la reconnaissance vocale. Veuillez utiliser Google Chrome ou Edge.");
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'fr-FR';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            btn.recognition = recognition;
+            btn.isRecording = true;
+
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = `<span class="flex items-center gap-1.5 text-red-500 animate-pulse text-[10px] font-bold uppercase tracking-wider"><div class="w-2 h-2 bg-red-500 rounded-full"></div> Écoute... (Clic pour arrêter)</span>`;
+            
+            try {
+                recognition.start();
+            } catch(e) {
+                console.error(e);
+                btn.innerHTML = originalHtml;
+                btn.isRecording = false;
+                lucide.createIcons();
+                return;
+            }
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                const target = document.getElementById(targetId);
+                // Ajoute la dictée (avec un espace si non vide)
+                target.value += (target.value ? " " : "") + transcript;
+            };
+
+            recognition.onerror = function(event) {
+                if (event.error !== 'aborted') {
+                    console.error("Erreur de reconnaissance vocale :", event.error);
+                    alert("Impossible de vous entendre ou erreur microphone.");
+                }
+            };
+
+            recognition.onend = function() {
+                // Rétablir le bouton que ça s'arrête tout seul, par erreur ou par arrêt manuel
+                btn.innerHTML = originalHtml;
+                btn.isRecording = false;
+                lucide.createIcons();
+            };
+        }
+    </script>
+</body>
+</html>

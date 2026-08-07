@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Architecture des Données - Coin des Éleveurs</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- HTML2PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Styles for the exportable content to ensure it looks good in Word/PDF */
+        .export-content {
+            background: white;
+            color: black;
+        }
+        .export-content h1 { color: #1E8E3E; font-size: 24pt; margin-bottom: 20px; font-weight: bold; border-bottom: 2px solid #1E8E3E; padding-bottom: 10px; }
+        .export-content h2 { color: #1f2937; font-size: 18pt; margin-top: 30px; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px; }
+        .export-content h3 { color: #374151; font-size: 14pt; margin-top: 20px; font-weight: bold; }
+        .export-content ul { list-style-type: disc; margin-left: 20px; margin-bottom: 15px; }
+        .export-content li { margin-bottom: 5px; font-size: 11pt; line-height: 1.5; }
+        .export-content code { background-color: #f3f4f6; padding: 2px 5px; border-radius: 4px; font-family: monospace; font-size: 10pt; color: #d97706;}
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+
+    <div class="max-w-4xl mx-auto">
+        
+        <!-- Header & Action Buttons -->
+        <div class="bg-white rounded-t-2xl p-6 border-b border-gray-200 flex justify-between items-center shadow-sm">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                    <i data-lucide="database" class="text-brand-green"></i> Document d'Architecture
+                </h1>
+                <p class="text-gray-500 text-sm">Coin des Éleveurs</p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="downloadPDF()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 transition-colors shadow-md shadow-red-500/20">
+                    <i data-lucide="file-text" class="w-4 h-4"></i> Télécharger en PDF
+                </button>
+                <button onclick="downloadWord()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-bold flex items-center gap-2 transition-colors shadow-md shadow-blue-600/20">
+                    <i data-lucide="file-word" class="w-4 h-4"></i> Télécharger en Word
+                </button>
+            </div>
+        </div>
+
+        <!-- Document Content (Target for export) -->
+        <div class="bg-white rounded-b-2xl shadow-sm p-10">
+            <div id="document-content" class="export-content">
+                
+                <h1>Architecture des Données - "Coin des Éleveurs"</h1>
+                <p><em>Ce document décrit l'architecture de la base de données (schéma relationnel) pour la plateforme SaaS.</em></p>
+
+                <h2>Table des Matières</h2>
+                <ul>
+                    <li>1. Utilisateurs et Rôles</li>
+                    <li>2. Animaux et Annonces</li>
+                    <li>3. Transactions et Commandes</li>
+                    <li>4. Espace Communautaire (Forum)</li>
+                    <li>5. Espace Foire Virtuelle (Live)</li>
+                    <li>6. Espace Administrateur & Support</li>
+                    <li>7. Espace Vétérinaire</li>
+                    <li>8. Relations et Cardinalités</li>
+                </ul>
+
+                <h2>1. Utilisateurs et Rôles</h2>
+                
+                <h3>Table <code>Users</code> (Utilisateurs)</h3>
+                <p>Gère tous les comptes de la plateforme.</p>
+                <ul>
+                    <li><strong>id_user</strong> (PK) : Identifiant unique.</li>
+                    <li><strong>nom_complet</strong> : Nom et prénom de l'utilisateur.</li>
+                    <li><strong>email</strong> : Adresse email (Unique).</li>
+                    <li><strong>mot_de_passe</strong> : Mot de passe haché.</li>
+                    <li><strong>telephone</strong> : Numéro de téléphone.</li>
+                    <li><strong>role</strong> : Rôle (ENUM : 'Acheteur', 'Eleveur', 'Admin', 'Veterinaire').</li>
+                    <li><strong>date_inscription</strong> : Date de création du compte.</li>
+                    <li><strong>statut</strong> : État du compte (Actif, Suspendu, En attente).</li>
+                </ul>
+
+                <h3>Table <code>Eleveur_Profils</code> (Profils Éleveurs)</h3>
+                <p>Données spécifiques aux éleveurs (Relation 1:1 avec Users).</p>
+                <ul>
+                    <li><strong>id_profil</strong> (PK) : Identifiant unique.</li>
+                    <li><strong>id_user</strong> (FK) : Lien vers l'utilisateur.</li>
+                    <li><strong>nom_ferme</strong> : Nom de l'exploitation agricole.</li>
+                    <li><strong>region</strong> : Région d'élevage (ex: Thiès, Dakar).</li>
+                    <li><strong>description</strong> : Présentation de l'éleveur.</li>
+                    <li><strong>badge_verifie</strong> : Booléen (True si certifié).</li>
+                    <li><strong>abonnement_pro</strong> : Booléen (True si Premium).</li>
+                </ul>
+
+                <h2>2. Animaux et Annonces</h2>
+
+                <h3>Table <code>Categories_Animaux</code></h3>
+                <ul>
+                    <li><strong>id_categorie</strong> (PK) : Identifiant.</li>
+                    <li><strong>nom_categorie</strong> : Nom (ex: Bovins, Ovins).</li>
+                </ul>
+
+                <h3>Table <code>Annonces</code></h3>
+                <ul>
+                    <li><strong>id_annonce</strong> (PK) : Identifiant.</li>
+                    <li><strong>id_eleveur</strong> (FK) : Référence à l'éleveur.</li>
+                    <li><strong>id_categorie</strong> (FK) : Catégorie de l'animal.</li>
+                    <li><strong>titre</strong> : Titre de l'annonce.</li>
+                    <li><strong>race</strong> : Race spécifique (Gobra, Ladoum...).</li>
+                    <li><strong>poids_kg</strong> / <strong>age_mois</strong> : Mensurations.</li>
+                    <li><strong>prix</strong> : Prix de vente.</li>
+                    <li><strong>statut</strong> : Statut (Disponible, Vendu, Réservé).</li>
+                </ul>
+
+                <h2>3. Transactions et Commandes</h2>
+                <h3>Table <code>Commandes</code></h3>
+                <ul>
+                    <li><strong>id_commande</strong> (PK) : Identifiant.</li>
+                    <li><strong>id_acheteur</strong> (FK) : Acheteur.</li>
+                    <li><strong>id_annonce</strong> (FK) : Animal acheté.</li>
+                    <li><strong>montant_total</strong> : Prix payé.</li>
+                    <li><strong>statut_paiement</strong> : (En attente, Payé, Échoué).</li>
+                    <li><strong>methode_paiement</strong> : (Wave, Orange Money, Carte).</li>
+                </ul>
+
+                <h2>4. Espace Communautaire (Forum)</h2>
+                <h3>Table <code>Forum_Sujets</code> (Topics)</h3>
+                <ul>
+                    <li><strong>id_sujet</strong> (PK) : Identifiant.</li>
+                    <li><strong>id_categorie</strong> (FK) : Catégorie du forum.</li>
+                    <li><strong>id_auteur</strong> (FK) : Éleveur (Auteur).</li>
+                    <li><strong>titre</strong> / <strong>contenu</strong> : Sujet de discussion.</li>
+                </ul>
+                <h3>Table <code>Forum_Reponses</code> (Messages)</h3>
+                <ul>
+                    <li><strong>id_reponse</strong> (PK) : Identifiant.</li>
+                    <li><strong>id_sujet</strong> (FK) : Sujet parent.</li>
+                    <li><strong>id_auteur</strong> (FK) : Auteur.</li>
+                    <li><strong>contenu</strong> : Texte.</li>
+                </ul>
+
+                <h2>5. Espace Foire Virtuelle (Live)</h2>
+                <h3>Table <code>Foires</code> (Événements)</h3>
+                <ul>
+                    <li><strong>id_foire</strong> (PK) : Identifiant.</li>
+                    <li><strong>id_eleveur</strong> (FK) : Organisateur.</li>
+                    <li><strong>titre</strong> : Titre de la foire.</li>
+                    <li><strong>date_prevue</strong> : Date du live.</li>
+                </ul>
+                <h3>Table <code>Foire_Encheres</code> (Offres)</h3>
+                <ul>
+                    <li><strong>id_enchere</strong> (PK) : Identifiant.</li>
+                    <li><strong>id_foire_animal</strong> (FK) : Animal concerné.</li>
+                    <li><strong>id_acheteur</strong> (FK) : Acheteur faisant l'offre.</li>
+                    <li><strong>montant_offre</strong> : Montant proposé.</li>
+                </ul>
+
+                <h2>6. Espace Administrateur & Support</h2>
+                <h3>Table <code>Tickets_Support</code></h3>
+                <ul>
+                    <li><strong>id_ticket</strong> (PK) : Identifiant du ticket.</li>
+                    <li><strong>id_user</strong> (FK) : Auteur du ticket.</li>
+                    <li><strong>sujet</strong> : Sujet du problème.</li>
+                    <li><strong>message</strong> : Description détaillée.</li>
+                    <li><strong>statut</strong> : État (Ouvert, Résolu).</li>
+                </ul>
+                <h3>Table <code>Transactions</code></h3>
+                <ul>
+                    <li><strong>id_transaction</strong> (PK) : Identifiant.</li>
+                    <li><strong>id_user</strong> (FK) : Utilisateur concerné.</li>
+                    <li><strong>type</strong> : (Abonnement, Commission, etc.).</li>
+                    <li><strong>montant</strong> : Montant financier.</li>
+                    <li><strong>date_transaction</strong> : Timestamp.</li>
+                </ul>
+
+                <h2>7. Espace Vétérinaire</h2>
+                <h3>Table <code>Veterinaire_Profils</code></h3>
+                <p>Données spécifiques aux vétérinaires (Relation 1:1 avec Users).</p>
+                <ul>
+                    <li><strong>id_profil</strong> (PK) : Identifiant.</li>
+                    <li><strong>id_user</strong> (FK) : Lien vers l'utilisateur (Rôle: Veterinaire).</li>
+                    <li><strong>nom_cabinet</strong> : Clinique ou nom du cabinet.</li>
+                    <li><strong>geolocalisation</strong> : Coordonnées GPS / Adresse exacte.</li>
+                </ul>
+
+                <h2>8. Relations et Cardinalités</h2>
+                <ul>
+                    <li>Un <strong>Utilisateur (Éleveur)</strong> peut publier plusieurs <strong>Annonces</strong> (1,n).</li>
+                    <li>Un <strong>Utilisateur (Éleveur ou Acheteur)</strong> peut contacter un <strong>Vétérinaire</strong> via chat direct (1,n).</li>
+                    <li>Une <strong>Annonce</strong> appartient à un seul <strong>Éleveur</strong> (1,1).</li>
+                    <li>Un <strong>Acheteur</strong> peut passer plusieurs <strong>Commandes</strong> (0,n).</li>
+                    <li>Une <strong>Foire</strong> est organisée par un seul <strong>Éleveur</strong> mais peut présenter plusieurs <strong>Animaux</strong> (1,n).</li>
+                    <li>L'<strong>Administrateur</strong> gère tous les <strong>Tickets</strong> et <strong>Transactions</strong> (1,n).</li>
+                </ul>
+                
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // Fonction pour télécharger en PDF
+        function downloadPDF() {
+            const element = document.getElementById('document-content');
+            const opt = {
+                margin:       10,
+                filename:     'Architecture_Donnees_CoinEleveur.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        // Fonction pour télécharger en Word (.doc)
+        function downloadWord() {
+            const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' "+
+                "xmlns:w='urn:schemas-microsoft-com:office:word' "+
+                "xmlns='http://www.w3.org/TR/REC-html40'>"+
+                "<head><meta charset='utf-8'><title>Architecture des Données</title></head><body>";
+            
+            // On récupère le HTML de la div
+            const content = document.getElementById('document-content').innerHTML;
+            const footer = "</body></html>";
+            
+            const sourceHTML = header + content + footer;
+            const source = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(sourceHTML);
+            
+            const fileDownload = document.createElement("a");
+            document.body.appendChild(fileDownload);
+            fileDownload.href = source;
+            fileDownload.download = 'Architecture_Donnees_CoinEleveur.doc';
+            fileDownload.click();
+            document.body.removeChild(fileDownload);
+        }
+    </script>
+</body>
+</html>

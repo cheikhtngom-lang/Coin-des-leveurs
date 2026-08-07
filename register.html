@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription - Coin des Éleveurs</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: { green: '#1E8E3E', light: '#4ade80', dark: '#14532d' },
+                        gold: '#FBBF24',
+                        surface: '#f8fafc',
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="db.js"></script>
+</head>
+<body class="font-sans bg-surface text-gray-800 antialiased min-h-screen flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-x-hidden">
+    
+    <!-- Bouton Retour -->
+    <a href="index.html" class="absolute top-6 left-6 z-20 flex items-center gap-2 bg-white/80 backdrop-blur-md px-4 py-2 rounded-full font-bold text-gray-700 hover:text-brand-green hover:scale-105 active:scale-95 transition-all duration-300 shadow-sm border border-white/50">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i> Retour au site
+    </a>
+
+    <!-- Background Design -->
+    <div class="absolute inset-0 z-0">
+        <img src="https://images.unsplash.com/photo-1544243689-53e7f918e690?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80" alt="Background" class="w-full h-full object-cover opacity-[0.03]">
+        <div class="absolute top-0 right-0 w-96 h-96 bg-brand-green/10 rounded-full blur-3xl -mt-20 -mr-20"></div>
+        <div class="absolute bottom-0 left-0 w-96 h-96 bg-gold/10 rounded-full blur-3xl -mb-20 -ml-20"></div>
+    </div>
+
+    <div class="max-w-md w-full space-y-8 bg-white/80 backdrop-blur-xl p-8 rounded-3xl shadow-xl border border-white/50 relative z-10 my-8">
+        <div>
+            <div class="flex items-center justify-center gap-2 cursor-pointer mb-6" onclick="window.location.href='index.html'">
+                <div class="w-12 h-12 rounded-2xl bg-brand-green flex items-center justify-center shadow-lg shadow-brand-green/30">
+                    <i data-lucide="leaf" class="text-white w-7 h-7"></i>
+                </div>
+            </div>
+            <h2 class="text-center text-3xl font-extrabold text-gray-900">Rejoignez-nous</h2>
+            <p class="mt-2 text-center text-sm text-gray-600">
+                Créez votre compte en quelques secondes.
+            </p>
+        </div>
+        
+        <!-- Toggle User Type -->
+        <div class="flex p-1 bg-gray-100 rounded-xl">
+            <button class="flex-1 py-2 text-sm font-medium rounded-lg text-gray-500 hover:text-gray-900 transition-all" id="btn-user">Utilisateur</button>
+            <button class="flex-1 py-2 text-sm font-bold rounded-lg bg-white text-gray-900 shadow-sm transition-all" id="btn-eleveur">Éleveur Pro</button>
+            <button class="flex-1 py-2 text-sm font-medium rounded-lg text-gray-500 hover:text-gray-900 transition-all" id="btn-veterinaire">Vétérinaire</button>
+        </div>
+
+        <form class="mt-8 space-y-4" action="#" method="POST">
+            <div>
+                <label for="nom" class="block text-sm font-semibold text-gray-700 mb-1">Nom complet</label>
+                <input id="nom" name="nom" type="text" required class="appearance-none rounded-xl relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-brand-green focus:border-brand-green focus:z-10 sm:text-sm transition-colors" placeholder="Ex: Amadou Ndiaye">
+            </div>
+            <div>
+                <label for="email-address" class="block text-sm font-semibold text-gray-700 mb-1">Adresse Email ou Téléphone</label>
+                <input id="email-address" name="email" type="email" autocomplete="email" required class="appearance-none rounded-xl relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-brand-green focus:border-brand-green focus:z-10 sm:text-sm transition-colors" placeholder="nom@exemple.com ou 77 123 45 67">
+            </div>
+            <div>
+                <label for="password" class="block text-sm font-semibold text-gray-700 mb-1">Mot de passe</label>
+                <input id="password" name="password" type="password" autocomplete="new-password" required class="appearance-none rounded-xl relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-brand-green focus:border-brand-green focus:z-10 sm:text-sm transition-colors" placeholder="••••••••">
+            </div>
+
+            <!-- Champs Vétérinaire (Cachés par défaut) -->
+            <div id="vet-fields" class="hidden space-y-4 pt-2 border-t border-gray-100">
+                <div>
+                    <label for="cabinet" class="block text-sm font-semibold text-gray-700 mb-1">Nom du cabinet ou clinique</label>
+                    <input id="cabinet" name="cabinet" type="text" class="appearance-none rounded-xl relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-brand-green focus:border-brand-green sm:text-sm transition-colors" placeholder="Ex: Clinique Vétérinaire de Dakar">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Localisation de la clinique</label>
+                    <div class="flex gap-2">
+                        <input id="localisation" name="localisation" type="text" readonly class="bg-gray-50 appearance-none rounded-xl relative block w-full px-4 py-3 border border-gray-300 text-gray-900 sm:text-sm" placeholder="Cliquez sur le bouton pour géolocaliser ->">
+                        <button type="button" onclick="getLocation()" class="flex-shrink-0 bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 px-4 rounded-xl flex items-center justify-center transition-colors" title="Obtenir ma position">
+                            <i data-lucide="map-pin" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="bg-green-50 text-green-700 p-3 rounded-xl text-sm font-medium flex gap-2 items-start">
+                    <i data-lucide="check-circle" class="w-5 h-5 flex-shrink-0 mt-0.5"></i>
+                    <p>En tant que vétérinaire vérifié, votre abonnement à la plateforme est 100% gratuit avec accès illimité !</p>
+                </div>
+            </div>
+
+            <div class="pt-2">
+                <button type="button" id="submit-btn" class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-xl text-white bg-brand-green hover:bg-brand-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-green transition-all duration-300 shadow-lg shadow-brand-green/30 hover:scale-105 active:scale-95">
+                    Créer mon compte
+                </button>
+            </div>
+        </form>
+        
+        <div class="mt-6 text-center">
+            <p class="text-sm text-gray-600">
+                Vous avez déjà un compte ? 
+                <a href="login.html" class="font-bold text-brand-green hover:text-brand-dark">Connectez-vous</a>
+            </p>
+        </div>
+    </div>
+    <script>
+        lucide.createIcons();
+        
+        // Simple toggle visual logic
+        const btnEleveur = document.getElementById('btn-eleveur');
+        const btnUser = document.getElementById('btn-user');
+        const btnVet = document.getElementById('btn-veterinaire');
+        const submitBtn = document.getElementById('submit-btn');
+        const vetFields = document.getElementById('vet-fields');
+        let currentUserType = 'eleveur'; 
+
+        function updateRoleButtons() {
+            btnEleveur.className = "flex-1 py-2 text-sm font-medium rounded-lg text-gray-500 hover:text-gray-900 transition-all";
+            btnUser.className = "flex-1 py-2 text-sm font-medium rounded-lg text-gray-500 hover:text-gray-900 transition-all";
+            btnVet.className = "flex-1 py-2 text-sm font-medium rounded-lg text-gray-500 hover:text-gray-900 transition-all";
+            vetFields.classList.add('hidden');
+            
+            if (currentUserType === 'eleveur') {
+                btnEleveur.className = "flex-1 py-2 text-sm font-bold rounded-lg bg-white text-gray-900 shadow-sm transition-all";
+            } else if (currentUserType === 'user') {
+                btnUser.className = "flex-1 py-2 text-sm font-bold rounded-lg bg-white text-gray-900 shadow-sm transition-all";
+            } else if (currentUserType === 'veterinaire') {
+                btnVet.className = "flex-1 py-2 text-sm font-bold rounded-lg bg-white text-gray-900 shadow-sm transition-all";
+                vetFields.classList.remove('hidden');
+            }
+        }
+        
+        btnEleveur.addEventListener('click', () => { currentUserType = 'eleveur'; updateRoleButtons(); });
+        btnUser.addEventListener('click', () => { currentUserType = 'user'; updateRoleButtons(); });
+        btnVet.addEventListener('click', () => { currentUserType = 'veterinaire'; updateRoleButtons(); });
+
+        // Simuler la géolocalisation pour le prototype
+        function getLocation() {
+            const btn = document.querySelector('button[title="Obtenir ma position"] i');
+            btn.classList.add('animate-pulse');
+            setTimeout(() => {
+                document.getElementById('localisation').value = "14.6928° N, 17.4467° W (Dakar, Sénégal)";
+                btn.classList.remove('animate-pulse');
+                btn.classList.replace('text-blue-600', 'text-brand-green');
+            }, 1000);
+        }
+
+        submitBtn.addEventListener('click', () => {
+            const nom = document.getElementById('nom').value;
+            const email = document.getElementById('email-address').value;
+            const password = document.getElementById('password').value;
+            
+            if (!nom || !email || !password) {
+                alert('Veuillez remplir tous les champs obligatoires');
+                return;
+            }
+
+            const data = { name: nom, email: email, password: password, role: currentUserType };
+            if (currentUserType === 'eleveur') data.farmName = nom + ' Ferme';
+            
+            if (currentUserType === 'veterinaire') {
+                const cabinet = document.getElementById('cabinet').value;
+                const loc = document.getElementById('localisation').value;
+                if(!cabinet || !loc) {
+                    alert('Veuillez remplir le nom du cabinet et cliquer sur la géolocalisation.');
+                    return;
+                }
+                data.cabinet = cabinet;
+                data.location = loc;
+            }
+
+            const result = DB.register(data);
+            
+            if (result.success) {
+                // Pour l'instant on redirige le véto vers l'interface utilisateur classique
+                if (currentUserType === 'eleveur') {
+                    window.location.href = 'dashboard-eleveur.html';
+                } else {
+                    window.location.href = 'dashboard-user.html';
+                }
+            } else {
+                alert(result.message);
+            }
+        });
+    </script>
+</body>
+</html>

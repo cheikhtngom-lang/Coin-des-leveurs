@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Éleveur - Coin des Éleveurs</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            green: '#1E8E3E',
+                            light: '#4ade80',
+                            dark: '#14532d',
+                        },
+                        gold: '#FBBF24',
+                        surface: '#f8fafc',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="db.js"></script>
+    <script>
+        const user = requireAuth(['eleveur', 'admin']);
+    </script>
+</head>
+<body class="font-sans bg-surface text-gray-800 antialiased h-screen flex overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-gray-200 hidden md:flex flex-col h-full z-20 shadow-sm">
+        <div class="h-20 flex items-center px-6 border-b border-gray-200">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-brand-green flex items-center justify-center">
+                    <i data-lucide="leaf" class="text-white w-5 h-5"></i>
+                </div>
+                <span class="font-bold text-xl text-gray-900">Espace <span class="text-brand-green">Pro</span></span>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto py-4 px-3 hide-scrollbar">
+            <div class="space-y-1">
+                <a href="#" onclick="switchTab('dashboard')" class="nav-link flex items-center gap-3 px-3 py-2.5 bg-brand-green/10 text-brand-green rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300" id="link-dashboard">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Vue d'ensemble
+                </a>
+                <a href="#" onclick="switchTab('analytics')" class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300" id="link-analytics">
+                    <i data-lucide="bar-chart-2" class="w-5 h-5"></i> Analytique
+                </a>
+                <a href="#" onclick="switchTab('animals')" class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300" id="link-animals">
+                    <i data-lucide="paw-print" class="w-5 h-5"></i> Mes animaux
+                </a>
+                <a href="#" onclick="openAddAnimalModal()" class="flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
+                    <i data-lucide="plus-circle" class="w-5 h-5"></i> Ajouter un animal
+                </a>
+                <a href="forum-eleveur.html" class="flex items-center justify-between px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="message-square" class="w-5 h-5"></i> Forum Communauté
+                    </div>
+                    <span class="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-bounce">3</span>
+                </a>
+                <a href="foire-eleveur.html" class="flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
+                    <i data-lucide="video" class="w-5 h-5"></i> Foires virtuelles
+                </a>
+                <a href="#" onclick="switchTab('vets')" class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300" id="link-vets">
+                    <i data-lucide="stethoscope" class="w-5 h-5"></i> Trouver Vétérinaire
+                </a>
+            </div>
+
+            <div class="mt-8 mb-4 px-3">
+                <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Paramètres</h3>
+                <div class="space-y-1">
+                    <a href="#" onclick="switchTab('subscription')" class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300" id="link-subscription">
+                        <i data-lucide="credit-card" class="w-5 h-5"></i> Abonnement <span class="ml-auto text-xs font-bold text-gold bg-gold/10 px-2 py-0.5 rounded uppercase">Pro</span>
+                    </a>
+                    <a href="#" onclick="switchTab('settings')" class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300" id="link-settings">
+                        <i data-lucide="settings" class="w-5 h-5"></i> Configuration
+                    </a>
+                    <a href="#" onclick="DB.logout(); window.location.href='index.html'" class="flex items-center gap-3 px-3 py-2.5 text-red-500 hover:bg-red-50 hover:text-red-700 rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300 mt-2">
+                        <i data-lucide="log-out" class="w-5 h-5"></i> Déconnexion
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upgrade to Premium banner -->
+        <div class="p-4 border-t border-gray-200">
+            <div class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-4 text-white">
+                <div class="flex items-center gap-2 mb-2">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-gold"></i>
+                    <span class="font-bold text-sm">Passer à Premium</span>
+                </div>
+                <p class="text-xs text-gray-300 mb-3">Débloquez les recommandations IA et l'assistance VIP.</p>
+                <button class="w-full bg-gold hover:bg-yellow-500 text-gray-900 text-sm font-bold py-2 rounded-xl hover:scale-105 active:scale-95 transition-all duration-300 shadow-lg shadow-gold/20">Mettre à niveau</button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden bg-surface">
+        
+        <!-- Topbar -->
+        <header class="h-20 bg-white border-b border-gray-200 flex items-center justify-between px-6 z-10 shadow-sm">
+            <div class="flex items-center gap-4">
+                <button class="md:hidden text-gray-500 hover:text-gray-900">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+                <h1 class="text-2xl font-bold text-gray-900 hidden sm:block">Vue d'ensemble</h1>
+            </div>
+
+            <div class="flex items-center gap-6">
+                <!-- Search -->
+                <div class="hidden lg:flex items-center bg-gray-50 rounded-full px-4 py-2 border border-gray-200 focus-within:border-brand-green focus-within:ring-1 focus-within:ring-brand-green transition-all">
+                    <i data-lucide="search" class="w-4 h-4 text-gray-400"></i>
+                    <input type="text" placeholder="Rechercher..." class="bg-transparent border-none focus:outline-none text-sm ml-2 w-64 text-gray-700">
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <button class="relative text-gray-500 hover:text-brand-green transition-colors">
+                        <i data-lucide="bell" class="w-6 h-6"></i>
+                        <span class="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+                    </button>
+                    
+                    <div class="h-8 w-px bg-gray-200"></div>
+
+                    <div class="flex items-center gap-3 cursor-pointer">
+                        <div class="text-right hidden sm:block">
+                            <p class="text-sm font-bold text-gray-900" id="header-farm-name">Ferme Sokhna</p>
+                            <p class="text-xs text-gray-500">Éleveur Vérifié</p>
+                        </div>
+                        <img src="https://ui-avatars.com/api/?name=Ferme+Sokhna&background=1E8E3E&color=fff" alt="Avatar" class="w-10 h-10 rounded-full border-2 border-brand-green/20">
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Area with Views -->
+        <div class="flex-1 overflow-y-auto p-4 sm:p-6 hide-scrollbar relative">
+            
+            <!-- View: Dashboard -->
+            <div id="view-dashboard" class="tab-view block max-w-7xl mx-auto space-y-6">
+                
+                <!-- Welcome & AI Tip -->
+                <div class="bg-white border border-brand-green/20 rounded-2xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden shadow-sm">
+                    <div class="absolute right-0 top-0 w-64 h-64 bg-brand-green/5 rounded-full blur-3xl -mr-20 -mt-20"></div>
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-900 mb-1" id="welcome-message">Bonjour ! 👋</h2>
+                        <p class="text-gray-600">Voici un résumé de votre activité pour aujourd'hui.</p>
+                    </div>
+                    <div class="bg-brand-green/10 border border-brand-green/20 rounded-xl p-4 max-w-md flex items-start gap-3 relative z-10">
+                        <i data-lucide="bot" class="w-6 h-6 text-brand-green shrink-0 mt-0.5"></i>
+                        <div>
+                            <p class="text-sm font-bold text-gray-900 mb-1">Conseil IA : Tabaski approche</p>
+                            <p class="text-xs text-gray-600">La demande pour les moutons Ladoum a augmenté de 40% cette semaine. Il est conseillé de mettre à jour vos annonces de béliers.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
+                                <i data-lucide="eye" class="w-6 h-6"></i>
+                            </div>
+                            <span class="text-sm font-bold text-green-600 flex items-center gap-1 bg-green-50 px-2 py-1 rounded-md">
+                                <i data-lucide="trending-up" class="w-3 h-3"></i> +12%
+                            </span>
+                        </div>
+                        <h3 class="text-3xl font-extrabold text-gray-900 mb-1">2,450</h3>
+                        <p class="text-gray-500 text-sm font-medium">Vues de vos annonces</p>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="w-12 h-12 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center">
+                                <i data-lucide="users" class="w-6 h-6"></i>
+                            </div>
+                            <span class="text-sm font-bold text-green-600 flex items-center gap-1 bg-green-50 px-2 py-1 rounded-md">
+                                <i data-lucide="trending-up" class="w-3 h-3"></i> +5%
+                            </span>
+                        </div>
+                        <h3 class="text-3xl font-extrabold text-gray-900 mb-1">840</h3>
+                        <p class="text-gray-500 text-sm font-medium">Visiteurs uniques</p>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="w-12 h-12 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center">
+                                <i data-lucide="mouse-pointer-click" class="w-6 h-6"></i>
+                            </div>
+                            <span class="text-sm font-bold text-green-600 flex items-center gap-1 bg-green-50 px-2 py-1 rounded-md">
+                                <i data-lucide="trending-up" class="w-3 h-3"></i> +24%
+                            </span>
+                        </div>
+                        <h3 class="text-3xl font-extrabold text-gray-900 mb-1">45</h3>
+                        <p class="text-gray-500 text-sm font-medium">Demandes de contact</p>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="w-12 h-12 bg-green-50 text-brand-green rounded-xl flex items-center justify-center">
+                                <i data-lucide="wallet" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-3xl font-extrabold text-gray-900 mb-1">2.4M <span class="text-lg text-gray-500">FCFA</span></h3>
+                        <p class="text-gray-500 text-sm font-medium">Revenus estimés potentiels</p>
+                    </div>
+                </div>
+
+                <!-- Charts & Active Listings -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Main Chart -->
+                    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm lg:col-span-2">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-lg font-bold text-gray-900">Trafic & Vues (30 derniers jours)</h3>
+                            <select class="bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-brand-green focus:border-brand-green block p-2">
+                                <option>Ce mois</option>
+                                <option>Mois dernier</option>
+                                <option>Cette année</option>
+                            </select>
+                        </div>
+                        <div class="h-72 w-full">
+                            <canvas id="trafficChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Top Listings -->
+                    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-lg font-bold text-gray-900">Mes Annonces</h3>
+                            <button class="text-brand-green hover:text-brand-dark font-medium text-sm">Voir tout</button>
+                        </div>
+                        
+                        <div class="space-y-4 max-h-[300px] overflow-y-auto pr-2" id="animal-list">
+                            <!-- Injected by JS -->
+                        </div>
+
+                        <button onclick="openAddAnimalModal()" class="w-full mt-6 py-2.5 bg-brand-green/10 hover:bg-brand-green/20 text-brand-green font-bold rounded-xl transition-colors flex items-center justify-center gap-2">
+                            <i data-lucide="plus" class="w-4 h-4"></i> Ajouter une annonce
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- View: Analytics -->
+            <div id="view-analytics" class="tab-view hidden max-w-7xl mx-auto space-y-6">
+                <!-- Analytics Header & Tabs -->
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <h2 class="text-2xl font-bold text-gray-900">Analytique Détaillée</h2>
+                    <div class="bg-gray-100 p-1 rounded-xl flex gap-1">
+                        <button class="px-4 py-2 text-sm font-bold bg-white text-gray-900 rounded-lg shadow-sm transition-all" id="btn-stat-ventes">Performances & Ventes</button>
+                        <button class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 rounded-lg transition-all" id="btn-stat-cheptel">État du Cheptel</button>
+                    </div>
+                </div>
+
+                <!-- KPI Ventes -->
+                <div id="stat-ventes-content" class="space-y-6 block">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm border-l-4 border-l-brand-green">
+                            <p class="text-sm font-semibold text-gray-500 mb-1">Chiffre d'Affaires Mensuel</p>
+                            <h3 class="text-3xl font-extrabold text-gray-900 mb-2">3.2M <span class="text-lg text-gray-500 font-normal">FCFA</span></h3>
+                            <span class="inline-flex items-center gap-1 text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-md">
+                                <i data-lucide="trending-up" class="w-3 h-3"></i> +15% vs mois dernier
+                            </span>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm border-l-4 border-l-blue-500">
+                            <p class="text-sm font-semibold text-gray-500 mb-1">Taux de Conversion</p>
+                            <h3 class="text-3xl font-extrabold text-gray-900 mb-2">4.8%</h3>
+                            <span class="inline-flex items-center gap-1 text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-md">
+                                <i data-lucide="trending-up" class="w-3 h-3"></i> +1.2%
+                            </span>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm border-l-4 border-l-purple-500">
+                            <p class="text-sm font-semibold text-gray-500 mb-1">Temps moyen de vente</p>
+                            <h3 class="text-3xl font-extrabold text-gray-900 mb-2">12 <span class="text-lg text-gray-500 font-normal">jours</span></h3>
+                            <span class="inline-flex items-center gap-1 text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-md">
+                                <i data-lucide="trending-down" class="w-3 h-3"></i> -2 jours
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col">
+                            <h3 class="text-lg font-bold text-gray-900 mb-4">Évolution des ventes (FCFA)</h3>
+                            <div class="relative w-full h-64 flex-1">
+                                <canvas id="salesChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col">
+                            <h3 class="text-lg font-bold text-gray-900 mb-4">Répartition des revenus</h3>
+                            <div class="relative w-full h-64 flex-1">
+                                <canvas id="revenuePieChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KPI Cheptel -->
+                <div id="stat-cheptel-content" class="space-y-6 hidden">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm border-l-4 border-l-orange-500">
+                            <p class="text-sm font-semibold text-gray-500 mb-1">Total Cheptel Actif</p>
+                            <h3 class="text-3xl font-extrabold text-gray-900 mb-2">42 <span class="text-lg text-gray-500 font-normal">têtes</span></h3>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm border-l-4 border-l-red-500">
+                            <p class="text-sm font-semibold text-gray-500 mb-1">Alerte de Stock</p>
+                            <h3 class="text-3xl font-extrabold text-gray-900 mb-2">Moutons</h3>
+                            <p class="text-xs text-red-500 font-bold mt-1">Forte demande: Plus que 2 Ladoums</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm border-l-4 border-l-brand-green">
+                            <p class="text-sm font-semibold text-gray-500 mb-1">Valeur Estimée du Stock</p>
+                            <h3 class="text-3xl font-extrabold text-gray-900 mb-2">12.5M <span class="text-lg text-gray-500 font-normal">FCFA</span></h3>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+                        <h3 class="text-lg font-bold text-gray-900 mb-4">Répartition du Cheptel</h3>
+                        <div class="relative w-full h-72">
+                            <canvas id="inventoryBarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: Animals -->
+            <div id="view-animals" class="tab-view hidden max-w-7xl mx-auto space-y-6">
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-bold text-gray-900">Tous mes animaux</h2>
+                        <button onclick="openAddAnimalModal()" class="px-4 py-2 bg-brand-green text-white font-bold rounded-xl shadow-md shadow-brand-green/20">Ajouter</button>
+                    </div>
+                    <div id="full-animal-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Cloned from the small list -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: Settings -->
+            <div id="view-settings" class="tab-view hidden max-w-5xl mx-auto">
+                <h2 class="text-3xl font-extrabold mb-6 text-gray-900">Configuration</h2>
+                <div class="bg-white p-12 rounded-3xl shadow-sm text-center border border-gray-200">
+                    <i data-lucide="settings" class="w-16 h-16 mx-auto mb-4 text-gray-300"></i>
+                    <p class="text-gray-500 text-lg font-medium">L'interface de configuration est en cours de développement.</p>
+                </div>
+            </div>
+
+            <!-- View: Vétérinaires -->
+            <div id="view-vets" class="tab-view hidden max-w-7xl mx-auto space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <div>
+                        <h2 class="text-3xl font-extrabold text-gray-900">Trouver un Vétérinaire</h2>
+                        <p class="text-gray-500 mt-1">Contactez des professionnels de la santé animale près de chez vous.</p>
+                    </div>
+                    <!-- Barre de recherche locale -->
+                    <div class="flex items-center bg-white rounded-full px-4 py-2 border border-gray-200 shadow-sm w-full sm:w-auto">
+                        <i data-lucide="search" class="w-5 h-5 text-gray-400"></i>
+                        <input type="text" id="search-vet-input" placeholder="Chercher une clinique ou ville..." oninput="renderVets()" class="bg-transparent border-none focus:outline-none text-sm ml-2 w-full sm:w-64 text-gray-700">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="vets-grid">
+                    <!-- Dynamic Vets will be inserted here -->
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Modal: Chat Vétérinaire -->
+    <div id="modal-chat-vet" class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-lg shadow-2xl flex flex-col overflow-hidden h-[600px] border border-gray-100">
+            <!-- Header Chat -->
+            <div class="bg-brand-green p-4 flex items-center justify-between shadow-md z-10">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-brand-green font-bold text-lg" id="chat-vet-initials">DR</div>
+                    <div>
+                        <h3 class="font-bold text-white text-lg" id="chat-vet-name">Dr. Ousmane Diop</h3>
+                        <p class="text-brand-light text-xs flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-green-300 animate-pulse"></span> En ligne</p>
+                    </div>
+                </div>
+                <button onclick="closeVetChat()" class="text-white/80 hover:text-white bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            
+            <!-- Messages Area -->
+            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 bg-gray-50 space-y-4 relative">
+                <div class="text-center my-4">
+                    <span class="bg-white px-3 py-1 rounded-full text-xs font-bold text-gray-400 shadow-sm border border-gray-100">Aujourd'hui</span>
+                </div>
+                
+                <!-- Initial Welcome Message -->
+                <div class="flex justify-start">
+                    <div class="bg-white p-3 rounded-2xl rounded-tl-sm shadow-sm max-w-[80%] border border-gray-100">
+                        <p class="text-sm text-gray-800">Bonjour, comment puis-je vous aider avec votre élevage aujourd'hui ?</p>
+                        <p class="text-[10px] text-gray-400 text-right mt-1">10:45</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Overlay d'enregistrement vocal (Caché par défaut) -->
+            <div id="voice-recording-overlay" class="hidden absolute inset-x-0 bottom-16 bg-white/90 backdrop-blur-md border-t border-red-100 p-4 flex flex-col items-center justify-center z-20">
+                <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-2 shadow-lg shadow-red-500/20">
+                    <i data-lucide="mic" class="w-8 h-8 animate-pulse"></i>
+                </div>
+                <p class="text-red-600 font-bold text-sm animate-pulse">Enregistrement vocal en cours...</p>
+                <p class="text-gray-500 text-xs mt-1">Parlez maintenant (simulation)</p>
+            </div>
+
+            <!-- Input Area -->
+            <div class="bg-white p-4 border-t border-gray-100 flex items-center gap-2 relative z-30">
+                <button type="button" class="text-gray-400 hover:text-brand-green p-2 transition-colors">
+                    <i data-lucide="paperclip" class="w-5 h-5"></i>
+                </button>
+                <input type="text" id="chat-input" placeholder="Écrivez votre message..." class="flex-1 bg-gray-50 border border-gray-200 rounded-full px-4 py-2.5 text-sm focus:outline-none focus:border-brand-green focus:ring-1 focus:ring-brand-green transition-all" onkeypress="handleChatKeyPress(event)">
+                <button type="button" onclick="sendTextMessage()" class="text-white bg-brand-green hover:bg-brand-dark p-2.5 rounded-full shadow-md hover:scale-105 active:scale-95 transition-all">
+                    <i data-lucide="send" class="w-4 h-4"></i>
+                </button>
+                <button type="button" id="btn-voice-record" onclick="simulateVoiceRecord()" class="text-brand-green bg-green-50 hover:bg-green-100 border border-green-200 p-2.5 rounded-full shadow-sm hover:scale-105 active:scale-95 transition-all relative">
+                    <i data-lucide="mic" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Animal Modal -->
+    <div id="addAnimalModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center px-4">
+        <div class="bg-white w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl">
+            <div class="flex justify-between items-center p-6 border-b border-gray-100">
+                <h3 class="text-xl font-bold text-gray-900">Ajouter un animal</h3>
+                <button onclick="closeAddAnimalModal()" class="text-gray-400 hover:text-gray-700 transition-colors">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <form id="addAnimalForm" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2">
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Titre de l'annonce</label>
+                            <input type="text" id="animal-title" required class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-brand-green focus:border-brand-green">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Catégorie</label>
+                            <select id="animal-category" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-brand-green focus:border-brand-green">
+                                <option value="Ovin">Ovin (Mouton)</option>
+                                <option value="Bovin">Bovin (Vache, Taureau)</option>
+                                <option value="Cheval">Cheval</option>
+                                <option value="Caprin">Caprin (Chèvre)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Race</label>
+                            <input type="text" id="animal-race" required class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-brand-green focus:border-brand-green">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Prix (FCFA)</label>
+                            <input type="number" id="animal-price" required class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-brand-green focus:border-brand-green">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Poids (kg)</label>
+                            <input type="number" id="animal-weight" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-brand-green focus:border-brand-green">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Localisation</label>
+                            <input type="text" id="animal-location" required class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-brand-green focus:border-brand-green">
+                        </div>
+                    </div>
+                    <div class="pt-4 flex justify-end gap-3">
+                        <button type="button" onclick="closeAddAnimalModal()" class="px-5 py-2.5 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">Annuler</button>
+                        <button type="submit" class="px-5 py-2.5 rounded-xl font-bold text-white bg-brand-green hover:bg-brand-dark transition-colors shadow-lg">Publier l'annonce</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Init Icons & Chart -->
+    <script>
+        // Chart.js Configuration
+        const ctx = document.getElementById('trafficChart').getContext('2d');
+        
+        // Gradient for line chart
+        let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(30, 142, 62, 0.5)'); // brand-green
+        gradient.addColorStop(1, 'rgba(30, 142, 62, 0.0)');
+
+        const data = {
+            labels: ['1', '5', '10', '15', '20', '25', '30'],
+            datasets: [{
+                label: 'Vues des annonces',
+                data: [150, 230, 380, 290, 520, 680, 850],
+                fill: true,
+                backgroundColor: gradient,
+                borderColor: '#1E8E3E',
+                borderWidth: 3,
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#1E8E3E',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                tension: 0.4
+            }]
+        };
+
+        // --- Nouveaux Graphiques Analytiques ---
+        const initAnalyticsCharts = () => {
+            // Tab switching logic for analytics
+            const btnVentes = document.getElementById('btn-stat-ventes');
+            const btnCheptel = document.getElementById('btn-stat-cheptel');
+            const contentVentes = document.getElementById('stat-ventes-content');
+            const contentCheptel = document.getElementById('stat-cheptel-content');
+
+            btnVentes.addEventListener('click', () => {
+                btnVentes.className = "px-4 py-2 text-sm font-bold bg-white text-gray-900 rounded-lg shadow-sm transition-all";
+                btnCheptel.className = "px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 rounded-lg transition-all";
+                contentVentes.classList.remove('hidden');
+                contentVentes.classList.add('block');
+                contentCheptel.classList.add('hidden');
+                contentCheptel.classList.remove('block');
+            });
+
+            btnCheptel.addEventListener('click', () => {
+                btnCheptel.className = "px-4 py-2 text-sm font-bold bg-white text-gray-900 rounded-lg shadow-sm transition-all";
+                btnVentes.className = "px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 rounded-lg transition-all";
+                contentCheptel.classList.remove('hidden');
+                contentCheptel.classList.add('block');
+                contentVentes.classList.add('hidden');
+                contentVentes.classList.remove('block');
+            });
+
+            // Sales Chart (Bar)
+            new Chart(document.getElementById('salesChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
+                    datasets: [{
+                        label: 'Ventes',
+                        data: [1.2, 1.9, 1.5, 2.8, 2.4, 3.2],
+                        backgroundColor: '#1E8E3E',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { borderDash: [2, 4] }, ticks: { callback: v => v + 'M' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // Revenue Pie Chart
+            new Chart(document.getElementById('revenuePieChart').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Ovins', 'Bovins', 'Volailles', 'Autres'],
+                    datasets: [{
+                        data: [55, 30, 10, 5],
+                        backgroundColor: ['#1E8E3E', '#FBBF24', '#3B82F6', '#8B5CF6'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+                    },
+                    cutout: '70%'
+                }
+            });
+
+            // Inventory Bar Chart (Horizontal)
+            new Chart(document.getElementById('inventoryBarChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Moutons Ladoum', 'Moutons Touabire', 'Vaches Gobra', 'Poulets de chair'],
+                    datasets: [{
+                        label: 'Quantité',
+                        data: [12, 18, 5, 120],
+                        backgroundColor: ['#4ade80', '#1E8E3E', '#FBBF24', '#f87171'],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { beginAtZero: true, grid: { borderDash: [2, 4] } },
+                        y: { grid: { display: false } }
+                    }
+                }
+            });
+        };
+
+        // Call initAnalyticsCharts once the DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            const currentUser = DB.getCurrentUser();
+            if (currentUser) {
+                document.getElementById('header-farm-name').textContent = currentUser.farmName || currentUser.name;
+            }
+            // Ensure first tab is correctly initialized
+            switchTab('dashboard');
+            initAnalyticsCharts();
+        });
+
+        const config = {
+            type: 'line',
+            data: data,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: '#111827',
+                        padding: 10,
+                        cornerRadius: 8,
+                        titleFont: { size: 13, family: 'Inter' },
+                        bodyFont: { size: 14, family: 'Inter', weight: 'bold' },
+                        displayColors: false,
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            display: false,
+                            drawBorder: false
+                        },
+                        ticks: {
+                            font: { family: 'Inter', size: 12 },
+                            color: '#6B7280'
+                        },
+                        grid: { display: false }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { borderDash: [5, 5] }
+                    }
+                }
+            }
+        };
+
+        new Chart(ctx, config);
+
+        // --- DYNAMIC LOGIC ---
+        document.addEventListener('DOMContentLoaded', () => {
+            if(user) {
+                document.getElementById('welcome-message').innerText = `Bonjour, ${user.farmName || user.name} ! 👋`;
+            }
+            renderAnimals();
+        });
+
+        function renderAnimals() {
+            const list = document.getElementById('animal-list');
+            const fullList = document.getElementById('full-animal-list');
+            const animals = DB.getEleveurAnimals(user.id);
+            
+            if (animals.length === 0) {
+                list.innerHTML = `<p class="text-sm text-gray-500 text-center py-4">Aucune annonce pour le moment.</p>`;
+                if(fullList) fullList.innerHTML = `<p class="text-sm text-gray-500 col-span-3 text-center py-4">Vous n'avez pas encore d'animaux.</p>`;
+                return;
+            }
+
+            const htmlContentSmall = animals.map(a => `
+                <div class="flex items-center gap-4 bg-gray-50 p-2 rounded-xl">
+                    <img src="${a.image || 'https://images.unsplash.com/photo-1511117833895-4b473c0b85d6?auto=format&fit=crop&w=150&q=80'}" alt="${a.title}" class="w-16 h-16 rounded-xl object-cover shadow-sm">
+                    <div class="flex-1">
+                        <h4 class="text-sm font-bold text-gray-900 truncate" title="${a.title}">${a.title}</h4>
+                        <p class="text-xs text-brand-green font-bold">${Number(a.price).toLocaleString()} FCFA</p>
+                    </div>
+                    <div class="text-right flex flex-col items-end">
+                        <span class="text-xs px-2 py-1 rounded-full ${a.status === 'vendu' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">${a.status}</span>
+                        <button onclick="deleteAnimal('${a.id}')" class="text-xs text-red-500 hover:text-red-700 mt-2">Supprimer</button>
+                    </div>
+                </div>
+            `).join('');
+
+            list.innerHTML = htmlContentSmall;
+            if(fullList) fullList.innerHTML = htmlContentSmall;
+        }
+
+        function openAddAnimalModal() {
+            document.getElementById('addAnimalModal').classList.remove('hidden');
+        }
+
+        function closeAddAnimalModal() {
+            document.getElementById('addAnimalModal').classList.add('hidden');
+            document.getElementById('addAnimalForm').reset();
+        }
+
+        document.getElementById('addAnimalForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const data = {
+                eleveurId: user.id,
+                title: document.getElementById('animal-title').value,
+                category: document.getElementById('animal-category').value,
+                race: document.getElementById('animal-race').value,
+                price: document.getElementById('animal-price').value,
+                weight: document.getElementById('animal-weight').value,
+                location: document.getElementById('animal-location').value,
+                status: 'disponible',
+                image: 'https://images.unsplash.com/photo-1511117833895-4b473c0b85d6?auto=format&fit=crop&w=800&q=80' // default placeholder
+            };
+            DB.addAnimal(data);
+            closeAddAnimalModal();
+            renderAnimals(); // refresh list
+        });
+
+        function deleteAnimal(id) {
+            if(confirm('Êtes-vous sûr de vouloir supprimer cette annonce ?')) {
+                DB.deleteAnimal(id);
+                renderAnimals();
+            }
+        }
+
+        // Single Page Navigation Logic
+        function switchTab(tabId) {
+            // Hide all views
+            document.querySelectorAll('.tab-view').forEach(view => {
+                view.classList.add('hidden');
+            });
+            // Show selected view
+            const selectedView = document.getElementById('view-' + tabId);
+            if(selectedView) {
+                selectedView.classList.remove('hidden');
+                selectedView.classList.add('block');
+                if (tabId === 'vets') renderVets();
+            }// Update active state on nav links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('bg-brand-green/10', 'text-brand-green', 'font-bold');
+                link.classList.add('text-gray-600', 'font-medium', 'hover:bg-gray-50');
+            });
+            event.currentTarget.classList.remove('text-gray-600', 'font-medium', 'hover:bg-gray-50');
+            event.currentTarget.classList.add('bg-brand-green/10', 'text-brand-green', 'font-bold');
+            
+            // Close mobile menu if open
+            const sidebar = document.getElementById('sidebar');
+            if(window.innerWidth < 1024) {
+                sidebar.classList.add('-translate-x-full');
+            }
+        }
+
+        // Settings Tabs Navigation Logic
+        function switchSettingsTab(targetId, btnElement) {
+            // Hide all settings content
+            document.querySelectorAll('.settings-content').forEach(content => {
+                content.classList.remove('block');
+                content.classList.add('hidden');
+            });
+            
+            // Show target
+            document.getElementById(targetId).classList.remove('hidden');
+            document.getElementById(targetId).classList.add('block');
+            
+            // Reset buttons
+            document.querySelectorAll('.settings-tab-btn').forEach(btn => {
+                btn.classList.remove('bg-brand-green/10', 'text-brand-green');
+                btn.classList.add('text-gray-600', 'hover:bg-gray-200');
+            });
+            
+            // Activate clicked button
+            btnElement.classList.remove('text-gray-600', 'hover:bg-gray-200');
+            btnElement.classList.add('bg-brand-green/10', 'text-brand-green');
+        }
+
+        // Populate UI from currentUser
+        if (currentUser) {
+            document.getElementById('header-user-name').innerText = currentUser.name;
+            const farmName = currentUser.farmName || 'Ferme';
+            document.getElementById('header-avatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(farmName)}&background=1E8E3E&color=fff`;
+            
+            const settingsAvatar = document.getElementById('settings-avatar');
+            if(settingsAvatar) settingsAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(farmName)}&background=1E8E3E&color=fff`;
+
+            // Pre-fill settings form
+            if (document.getElementById('set-name')) {
+                document.getElementById('set-name').value = currentUser.name;
+                document.getElementById('set-farm').value = currentUser.farmName || '';
+                document.getElementById('set-email').value = currentUser.email;
+            }
+        }
+
+        function saveProfileSettings() {
+            if(!currentUser) return;
+            const users = DB.get('users');
+            const idx = users.findIndex(u => u.id === currentUser.id);
+            if (idx > -1) {
+                users[idx].name = document.getElementById('set-name').value;
+                users[idx].farmName = document.getElementById('set-farm').value;
+                // email remains unchanged here, or we can handle it if we want
+                DB.set('users', users);
+                localStorage.setItem('currentUser', JSON.stringify(users[idx]));
+                alert('Profil sauvegardé avec succès !');
+                window.location.reload();
+            }
+        }
+
+        function saveSecuritySettings() {
+            if(!currentUser) return;
+            const users = DB.get('users');
+            const idx = users.findIndex(u => u.id === currentUser.id);
+            if (idx > -1) {
+                const oldPwd = document.getElementById('set-old-pwd').value;
+                const newPwd = document.getElementById('set-new-pwd').value;
+                const email = document.getElementById('set-email').value;
+                
+                if (oldPwd && oldPwd !== users[idx].password) {
+                    alert('L\'ancien mot de passe est incorrect.');
+                    return;
+                }
+                
+                if (newPwd) users[idx].password = newPwd;
+                if (email) users[idx].email = email;
+                
+                DB.set('users', users);
+                localStorage.setItem('currentUser', JSON.stringify(users[idx]));
+                alert('Sécurité et identifiants sauvegardés avec succès !');
+                window.location.reload();
+            }
+        }
+
+    </script>
+</body>
+</html>
