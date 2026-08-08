@@ -94,7 +94,7 @@
                         </div>
                         <img src="https://ui-avatars.com/api/?name=Elevage+Diallo&background=1E8E3E&color=fff&rounded=true" alt="Avatar" class="w-10 h-10 rounded-full border-2 border-white shadow-sm">
                     </div>
-                    <a href="dashboard-eleveur.html" class="bg-white border border-gray-200 text-gray-600 hover:text-brand-green hover:border-brand-green/30 px-4 py-2 rounded-xl font-medium transition-all shadow-sm flex items-center gap-2">
+                    <a id="btn-return-dashboard" href="#" class="bg-white border border-gray-200 text-gray-600 hover:text-brand-green hover:border-brand-green/30 px-4 py-2 rounded-xl font-medium transition-all shadow-sm flex items-center gap-2">
                         <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
                         <span class="hidden sm:inline">Tableau de bord</span>
                     </a>
@@ -469,6 +469,22 @@
                 activeBtn.className = 'tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all text-brand-green bg-brand-green/10';
             }
         }
+
+        // Configuration dynamique du bouton de retour au tableau de bord
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.currentUser) {
+                const btn = document.getElementById('btn-return-dashboard');
+                if (btn) {
+                    if (window.currentUser.role === 'admin') {
+                        btn.href = 'dashboard-admin.html';
+                    } else if (window.currentUser.role === 'eleveur') {
+                        btn.href = 'dashboard-eleveur.html';
+                    } else {
+                        btn.href = 'dashboard-user.html';
+                    }
+                }
+            }
+        });
     </script>
 </body>
 </html>

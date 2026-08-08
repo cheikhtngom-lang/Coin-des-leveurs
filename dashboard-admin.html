@@ -43,53 +43,101 @@
     <script>
         window.currentUser = window.requireAuth(['admin']);
     </script>
-</head>
-<body class="flex h-screen overflow-hidden bg-gray-50 font-sans">
+    <!-- Custom CSS (Aceternity, Godly, Mobbin style) -->
+    <style>
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .bento-card {
+            background: #0f172a; /* Slate 900 */
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .bento-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+        }
 
-    <!-- Sidebar Admin (Dark Theme) -->
-    <aside class="w-64 bg-admin border-r border-gray-800 hidden md:flex flex-col h-full z-20 shadow-2xl text-white">
-        <div class="h-20 flex items-center px-6 border-b border-gray-700 bg-gray-900/50">
-            <div class="flex items-center gap-2 cursor-pointer hover:scale-105 active:scale-95 transition-all duration-300" onclick="window.location.href='index.html'">
-                <div class="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center shadow-lg shadow-red-600/30">
+        .spotlight-bg {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80vw;
+            height: 80vh;
+            background: radial-gradient(circle, rgba(239, 68, 68, 0.08) 0%, rgba(0,0,0,0) 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Hide scrollbar */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden bg-[#030712] text-gray-200 font-sans relative">
+    
+    <!-- Background Spotlight Effect -->
+    <div class="spotlight-bg"></div>
+
+    <!-- Sidebar Admin (Floating Glassmorphism) -->
+    <aside class="w-64 glass-panel m-4 rounded-3xl hidden md:flex flex-col z-20 overflow-hidden relative">
+        <div class="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent pointer-events-none"></div>
+        
+        <div class="h-20 flex items-center px-6 border-b border-white/5 relative z-10">
+            <div class="flex items-center gap-3 cursor-pointer hover:scale-105 active:scale-95 transition-all duration-300" onclick="window.location.href='index.html'">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center shadow-[0_0_20px_rgba(239,68,68,0.4)]">
                     <i data-lucide="shield" class="text-white w-5 h-5"></i>
                 </div>
-                <span class="font-bold text-xl">Admin <span class="text-red-500">Panel</span></span>
+                <span class="font-bold text-xl text-white tracking-tight">Admin<span class="text-red-500">.</span></span>
             </div>
         </div>
 
-        <div class="flex-1 overflow-y-auto py-4 px-3 hide-scrollbar">
+        <div class="flex-1 overflow-y-auto py-6 px-4 hide-scrollbar relative z-10">
             <div class="space-y-1">
-                <a href="#" onclick="switchTab('overview')" id="link-overview" class="nav-link flex items-center gap-3 px-3 py-2.5 bg-white/10 text-white rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
+                <a href="#" onclick="switchTab('overview')" id="link-overview" class="nav-link flex items-center gap-3 px-4 py-3 bg-white/10 text-white rounded-2xl font-semibold hover:scale-105 active:scale-95 transition-all duration-300 shadow-sm border border-white/5">
                     <i data-lucide="layout-dashboard" class="w-5 h-5 text-red-400"></i> Vue Globale
                 </a>
-                <a href="#" onclick="switchTab('users')" id="link-users" class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-400 hover:bg-white/5 hover:text-white rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
+                <a href="#" onclick="switchTab('users')" id="link-users" class="nav-link flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-white/5 hover:text-white rounded-2xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
                     <i data-lucide="users" class="w-5 h-5"></i> Utilisateurs
                 </a>
-                <a href="#" onclick="switchTab('eleveurs')" id="link-eleveurs" class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-400 hover:bg-white/5 hover:text-white rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
+                <a href="#" onclick="switchTab('eleveurs')" id="link-eleveurs" class="nav-link flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-white/5 hover:text-white rounded-2xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
                     <i data-lucide="store" class="w-5 h-5"></i> Éleveurs Vérifiés
                 </a>
-                <a href="#" onclick="switchTab('animaux')" id="link-animaux" class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-400 hover:bg-white/5 hover:text-white rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
+                <a href="#" onclick="switchTab('animaux')" id="link-animaux" class="nav-link flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-white/5 hover:text-white rounded-2xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
                     <i data-lucide="paw-print" class="w-5 h-5"></i> Annonces Animaux
                 </a>
-                <a href="#" onclick="switchTab('forum')" id="link-forum" class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-400 hover:bg-white/5 hover:text-white rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
+                <a href="#" onclick="switchTab('forum')" id="link-forum" class="nav-link flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-white/5 hover:text-white rounded-2xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
                     <i data-lucide="headphones" class="w-5 h-5"></i> Support & Tickets
                 </a>
-                <a href="#" onclick="switchTab('foires')" id="link-foires" class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-400 hover:bg-white/5 hover:text-white rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
-                    <i data-lucide="video" class="w-5 h-5"></i> Gestion Foires (Live)
+                <a href="#" onclick="switchTab('foires')" id="link-foires" class="nav-link flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-white/5 hover:text-white rounded-2xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
+                    <i data-lucide="video" class="w-5 h-5"></i> Gestion Foires
                 </a>
-                <a href="#" onclick="switchTab('paiements')" id="link-paiements" class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-400 hover:bg-white/5 hover:text-white rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
-                    <i data-lucide="credit-card" class="w-5 h-5"></i> Paiements & Abonnements
+                <a href="#" onclick="switchTab('paiements')" id="link-paiements" class="nav-link flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-white/5 hover:text-white rounded-2xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
+                    <i data-lucide="credit-card" class="w-5 h-5"></i> Paiements
+                </a>
+                <a href="#" onclick="switchTab('analytics')" id="link-analytics" class="nav-link flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-white/5 hover:text-white rounded-2xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
+                    <i data-lucide="pie-chart" class="w-5 h-5"></i> Analytiques
                 </a>
             </div>
 
-            <div class="mt-8 mb-4 px-3">
-                <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Système</h3>
+            <div class="mt-10 mb-4">
+                <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-3 px-4">Système</h3>
                 <div class="space-y-1">
-                    <a href="#" onclick="switchTab('settings')" id="link-settings" class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-400 hover:bg-white/5 hover:text-white rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
+                    <a href="#" onclick="switchTab('settings')" id="link-settings" class="nav-link flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-white/5 hover:text-white rounded-2xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
                         <i data-lucide="settings" class="w-5 h-5"></i> Paramètres
                     </a>
-                    <a href="#" onclick="window.DB.logout().then(() => window.location.href='index.html')" class="flex items-center gap-3 px-3 py-2.5 text-gray-400 hover:bg-white/5 hover:text-white rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
-                        <i data-lucide="log-out" class="w-5 h-5 text-red-500"></i> Déconnexion
+                    <a href="#" onclick="window.DB.logout().then(() => window.location.href='index.html')" class="flex items-center gap-3 px-4 py-3 text-gray-400 hover:bg-red-500/10 hover:text-red-400 rounded-2xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
+                        <i data-lucide="log-out" class="w-5 h-5"></i> Déconnexion
                     </a>
                 </div>
             </div>
@@ -97,38 +145,40 @@
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 flex flex-col h-full overflow-hidden bg-gray-50">
+    <main class="flex-1 flex flex-col h-full relative z-10">
         
-        <!-- Topbar -->
-        <header class="h-20 bg-white border-b border-gray-200 flex items-center justify-between px-6 z-10 shadow-sm">
+        <!-- Topbar Glass -->
+        <header class="h-24 px-8 flex items-center justify-between">
             <div class="flex items-center gap-4">
-                <button class="md:hidden text-gray-500 hover:text-gray-900 transition-colors">
-                    <i data-lucide="menu" class="w-6 h-6"></i>
+                <button class="md:hidden w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white transition-colors">
+                    <i data-lucide="menu" class="w-5 h-5"></i>
                 </button>
-                <h1 class="text-2xl font-bold text-gray-900 hidden sm:block">Tableau de bord Administrateur</h1>
+                <h1 class="text-3xl font-bold text-white hidden sm:block tracking-tight">Vue d'ensemble</h1>
             </div>
 
             <div class="flex items-center gap-6">
                 <!-- Global Search -->
-                <div class="hidden lg:flex items-center bg-gray-100 rounded-full px-4 py-2 focus-within:ring-2 focus-within:ring-admin transition-all w-72 hover:shadow-md">
-                    <i data-lucide="search" class="w-4 h-4 text-gray-500"></i>
-                    <input type="text" placeholder="Rechercher utilisateur, annonce..." class="bg-transparent border-none focus:outline-none text-sm ml-2 w-full text-gray-700">
+                <div class="hidden lg:flex items-center glass-panel rounded-full px-5 py-2.5 w-80 border border-white/10 group focus-within:border-red-500/50 focus-within:shadow-[0_0_15px_rgba(239,68,68,0.2)] transition-all">
+                    <i data-lucide="search" class="w-4 h-4 text-gray-400 group-focus-within:text-red-400 transition-colors"></i>
+                    <input type="text" placeholder="Recherche globale..." class="bg-transparent border-none focus:outline-none text-sm ml-3 w-full text-white placeholder-gray-500">
                 </div>
 
-                <div class="flex items-center gap-4">
-                    <button class="relative text-gray-500 hover:text-red-500 hover:scale-110 active:scale-95 transition-all duration-300">
-                        <i data-lucide="bell" class="w-6 h-6"></i>
-                        <span class="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white animate-pulse"></span>
+                <div class="flex items-center gap-5">
+                    <button class="relative w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all">
+                        <i data-lucide="bell" class="w-5 h-5"></i>
+                        <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
                     </button>
                     
-                    <div class="h-8 w-px bg-gray-200"></div>
+                    <div class="h-8 w-px bg-white/10"></div>
 
-                    <div class="flex items-center gap-3 cursor-pointer hover:scale-105 active:scale-95 transition-transform duration-300">
+                    <div class="flex items-center gap-3 cursor-pointer group">
                         <div class="text-right hidden sm:block">
-                            <p class="text-sm font-bold text-gray-900">Super Admin</p>
-                            <p class="text-xs text-red-500 font-medium">Système</p>
+                            <p class="text-sm font-bold text-white group-hover:text-red-400 transition-colors">Super Admin</p>
+                            <p class="text-[10px] text-gray-500 font-medium uppercase tracking-wider">Accès Total</p>
                         </div>
-                        <img src="https://ui-avatars.com/api/?name=Admin&background=1e293b&color=fff" alt="Avatar Admin" class="w-10 h-10 rounded-full border-2 border-admin">
+                        <div class="w-11 h-11 rounded-full p-0.5 bg-gradient-to-br from-red-500 to-transparent group-hover:rotate-12 transition-transform duration-500">
+                            <img src="https://ui-avatars.com/api/?name=Admin&background=1e293b&color=fff" alt="Avatar" class="w-full h-full rounded-full border-2 border-[#030712]">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -139,88 +189,101 @@
             <div id="view-overview" class="view-section block max-w-7xl mx-auto space-y-6">
                 
                 <!-- Welcome Banner -->
-                <div class="bg-admin text-white rounded-3xl p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden shadow-2xl hover:shadow-xl transition-shadow duration-300">
-                    <div class="absolute right-0 top-0 w-96 h-96 bg-red-500/20 rounded-full blur-3xl -mr-32 -mt-32"></div>
-                    <div class="absolute left-0 bottom-0 w-64 h-64 bg-blue-500/20 rounded-full blur-3xl -ml-20 -mb-20"></div>
-                    <div class="relative z-10">
-                        <h2 class="text-3xl font-extrabold mb-2">Contrôle Global du Site</h2>
-                        <p class="text-gray-300 text-lg">Supervisez l'activité des éleveurs, des utilisateurs et gérez les revenus.</p>
+                <div class="bento-card rounded-[2rem] p-10 flex flex-col md:flex-row items-center justify-between gap-8 z-10">
+                    <div class="absolute right-0 top-0 w-[500px] h-[500px] bg-red-500/10 rounded-full blur-[100px] -mr-40 -mt-40 pointer-events-none"></div>
+                    <div class="absolute left-0 bottom-0 w-80 h-80 bg-purple-500/10 rounded-full blur-[80px] -ml-20 -mb-20 pointer-events-none"></div>
+                    
+                    <div class="relative z-10 max-w-2xl">
+                        <h2 class="text-4xl md:text-5xl font-extrabold text-white mb-4 tracking-tight leading-tight">Centre de Commandement <span class="text-red-500 bg-red-500/10 px-3 py-1 rounded-xl text-3xl">Global</span></h2>
+                        <p class="text-gray-400 text-lg md:text-xl font-medium leading-relaxed">Supervisez l'écosystème en temps réel. Gérez les éleveurs VIP, analysez les flux financiers et modérez l'activité.</p>
                     </div>
-                    <button class="relative z-10 bg-red-500 hover:bg-red-600 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-red-500/30 hover:scale-105 active:scale-95 transition-all duration-300 flex items-center gap-2">
-                        <i data-lucide="file-text" class="w-5 h-5"></i> Générer Rapport
+                    <button class="relative z-10 group overflow-hidden bg-white/5 border border-white/10 hover:border-red-500/50 text-white px-8 py-4 rounded-2xl font-bold shadow-lg hover:shadow-[0_0_30px_rgba(239,68,68,0.3)] transition-all duration-500 flex items-center gap-3">
+                        <div class="absolute inset-0 w-0 bg-gradient-to-r from-red-600 to-red-500 transition-all duration-500 ease-out group-hover:w-full z-0"></div>
+                        <i data-lucide="file-text" class="w-5 h-5 relative z-10"></i> 
+                        <span class="relative z-10">Générer Rapport</span>
                     </button>
                 </div>
 
-                <!-- KPI Stats Cards -->
+                <!-- KPI Stats Cards (Bento Grid) -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     <!-- Revenus -->
-                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="w-14 h-14 bg-green-50 text-brand-green rounded-2xl flex items-center justify-center shadow-inner">
-                                <i data-lucide="dollar-sign" class="w-7 h-7"></i>
+                    <div class="bento-card p-6 rounded-3xl cursor-pointer group">
+                        <div class="absolute -right-10 -top-10 w-32 h-32 bg-green-500/10 rounded-full blur-2xl group-hover:bg-green-500/20 transition-all"></div>
+                        <div class="flex justify-between items-start mb-6 relative z-10">
+                            <div class="w-12 h-12 bg-green-500/10 text-green-400 rounded-2xl flex items-center justify-center border border-green-500/20 group-hover:scale-110 transition-transform">
+                                <i data-lucide="dollar-sign" class="w-6 h-6"></i>
                             </div>
-                            <span class="text-sm font-bold text-green-600 flex items-center gap-1 bg-green-100 px-3 py-1 rounded-full">
-                                <i data-lucide="trending-up" class="w-4 h-4"></i> +15%
+                            <span class="text-xs font-bold text-green-400 flex items-center gap-1 bg-green-500/10 border border-green-500/20 px-3 py-1 rounded-full">
+                                <i data-lucide="trending-up" class="w-3 h-3"></i> +15%
                             </span>
                         </div>
-                        <h3 class="text-4xl font-extrabold text-gray-900 mb-1" id="stat-revenus">0 <span class="text-lg text-gray-500">FCFA</span></h3>
-                        <p class="text-gray-500 font-medium">Revenus (Total)</p>
+                        <p class="text-gray-400 font-medium mb-1 text-sm relative z-10">Revenus (Total)</p>
+                        <h3 class="text-3xl font-extrabold text-white relative z-10" id="stat-revenus">0 <span class="text-base text-gray-500 font-medium">FCFA</span></h3>
                     </div>
 
                     <!-- Éleveurs Actifs -->
-                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shadow-inner">
-                                <i data-lucide="store" class="w-7 h-7"></i>
+                    <div class="bento-card p-6 rounded-3xl cursor-pointer group">
+                        <div class="absolute -right-10 -top-10 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all"></div>
+                        <div class="flex justify-between items-start mb-6 relative z-10">
+                            <div class="w-12 h-12 bg-blue-500/10 text-blue-400 rounded-2xl flex items-center justify-center border border-blue-500/20 group-hover:scale-110 transition-transform">
+                                <i data-lucide="store" class="w-6 h-6"></i>
                             </div>
-                            <span class="text-sm font-bold text-green-600 flex items-center gap-1 bg-green-100 px-3 py-1 rounded-full">
-                                <i data-lucide="trending-up" class="w-4 h-4"></i> +8
+                            <span class="text-xs font-bold text-green-400 flex items-center gap-1 bg-green-500/10 border border-green-500/20 px-3 py-1 rounded-full">
+                                <i data-lucide="trending-up" class="w-3 h-3"></i> +8
                             </span>
                         </div>
-                        <h3 class="text-4xl font-extrabold text-gray-900 mb-1" id="stat-eleveurs-vip">0</h3>
-                        <p class="text-gray-500 font-medium">Éleveurs VIP</p>
+                        <p class="text-gray-400 font-medium mb-1 text-sm relative z-10">Éleveurs VIP</p>
+                        <h3 class="text-3xl font-extrabold text-white relative z-10" id="stat-eleveurs-vip">0</h3>
                     </div>
 
                     <!-- Utilisateurs -->
-                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="w-14 h-14 bg-purple-50 text-purple-600 rounded-2xl flex items-center justify-center shadow-inner">
-                                <i data-lucide="users" class="w-7 h-7"></i>
+                    <div class="bento-card p-6 rounded-3xl cursor-pointer group">
+                        <div class="absolute -right-10 -top-10 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-all"></div>
+                        <div class="flex justify-between items-start mb-6 relative z-10">
+                            <div class="w-12 h-12 bg-purple-500/10 text-purple-400 rounded-2xl flex items-center justify-center border border-purple-500/20 group-hover:scale-110 transition-transform">
+                                <i data-lucide="users" class="w-6 h-6"></i>
                             </div>
-                            <span class="text-sm font-bold text-green-600 flex items-center gap-1 bg-green-100 px-3 py-1 rounded-full">
-                                <i data-lucide="trending-up" class="w-4 h-4"></i> +45%
+                            <span class="text-xs font-bold text-green-400 flex items-center gap-1 bg-green-500/10 border border-green-500/20 px-3 py-1 rounded-full">
+                                <i data-lucide="trending-up" class="w-3 h-3"></i> +45%
                             </span>
                         </div>
-                        <h3 class="text-4xl font-extrabold text-gray-900 mb-1" id="stat-acheteurs">0</h3>
-                        <p class="text-gray-500 font-medium">Acheteurs Inscrits</p>
+                        <p class="text-gray-400 font-medium mb-1 text-sm relative z-10">Acheteurs Inscrits</p>
+                        <h3 class="text-3xl font-extrabold text-white relative z-10" id="stat-acheteurs">0</h3>
                     </div>
 
                     <!-- Annonces -->
-                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="w-14 h-14 bg-orange-50 text-orange-600 rounded-2xl flex items-center justify-center shadow-inner">
-                                <i data-lucide="megaphone" class="w-7 h-7"></i>
+                    <div class="bento-card p-6 rounded-3xl cursor-pointer group">
+                        <div class="absolute -right-10 -top-10 w-32 h-32 bg-orange-500/10 rounded-full blur-2xl group-hover:bg-orange-500/20 transition-all"></div>
+                        <div class="flex justify-between items-start mb-6 relative z-10">
+                            <div class="w-12 h-12 bg-orange-500/10 text-orange-400 rounded-2xl flex items-center justify-center border border-orange-500/20 group-hover:scale-110 transition-transform">
+                                <i data-lucide="megaphone" class="w-6 h-6"></i>
                             </div>
-                            <span class="text-sm font-bold text-red-600 flex items-center gap-1 bg-red-100 px-3 py-1 rounded-full">
-                                <i data-lucide="trending-down" class="w-4 h-4"></i> -2%
+                            <span class="text-xs font-bold text-red-400 flex items-center gap-1 bg-red-500/10 border border-red-500/20 px-3 py-1 rounded-full">
+                                <i data-lucide="trending-down" class="w-3 h-3"></i> -2%
                             </span>
                         </div>
-                        <h3 class="text-4xl font-extrabold text-gray-900 mb-1" id="stat-annonces">0</h3>
-                        <p class="text-gray-500 font-medium">Annonces Actives</p>
+                        <p class="text-gray-400 font-medium mb-1 text-sm relative z-10">Annonces Actives</p>
+                        <h3 class="text-3xl font-extrabold text-white relative z-10" id="stat-annonces">0</h3>
                     </div>
                 </div>
 
                 <!-- Charts Section -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm lg:col-span-2">
-                        <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                            <i data-lucide="bar-chart-2" class="text-brand-green"></i> Croissance des Utilisateurs & Éleveurs
+                    <div class="bento-card p-6 rounded-3xl lg:col-span-2">
+                        <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-green-500/10 flex items-center justify-center border border-green-500/20">
+                                <i data-lucide="bar-chart-2" class="text-green-400 w-4 h-4"></i>
+                            </div> 
+                            Croissance
                         </h3>
                         <canvas id="growthChart" height="100"></canvas>
                     </div>
-                    <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col">
-                        <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                            <i data-lucide="pie-chart" class="text-purple-500"></i> Répartition par Type (Annonces)
+                    <div class="bento-card p-6 rounded-3xl flex flex-col">
+                        <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
+                                <i data-lucide="pie-chart" class="text-purple-400 w-4 h-4"></i>
+                            </div> 
+                            Répartition
                         </h3>
                         <div class="flex-1 flex items-center justify-center">
                             <canvas id="typeChart" width="200" height="200"></canvas>
@@ -229,23 +292,25 @@
                 </div>
 
                 <!-- Modération / Actions Récentes -->
-                <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-                    <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                        <h3 class="text-xl font-bold text-gray-900">Modération en attente</h3>
-                        <button class="text-brand-green font-semibold hover:text-brand-dark transition-colors hover:underline">Voir tout</button>
+                <div class="bento-card rounded-3xl overflow-hidden">
+                    <div class="p-6 border-b border-white/5 flex justify-between items-center bg-white/5">
+                        <h3 class="text-xl font-bold text-white flex items-center gap-3">
+                            <i data-lucide="shield-alert" class="text-red-400"></i> Modération en attente
+                        </h3>
+                        <button class="text-gray-400 text-sm font-semibold hover:text-white transition-colors bg-white/5 px-4 py-1.5 rounded-full border border-white/10 hover:border-white/20">Voir tout</button>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="bg-white text-gray-500 text-xs uppercase tracking-wider border-b border-gray-100">
-                                    <th class="p-4 font-semibold">Type</th>
-                                    <th class="p-4 font-semibold">Titre / Utilisateur</th>
-                                    <th class="p-4 font-semibold">Date</th>
-                                    <th class="p-4 font-semibold">Statut</th>
-                                    <th class="p-4 font-semibold text-right">Action</th>
+                                <tr class="bg-[#030712]/50 text-gray-500 text-xs uppercase tracking-wider border-b border-white/5">
+                                    <th class="p-4 font-bold">Type</th>
+                                    <th class="p-4 font-bold">Titre / Utilisateur</th>
+                                    <th class="p-4 font-bold">Date</th>
+                                    <th class="p-4 font-bold">Statut</th>
+                                    <th class="p-4 font-bold text-right">Action</th>
                                 </tr>
                             </thead>
-                            <tbody id="admin-moderation-list" class="divide-y divide-gray-100 text-sm">
+                            <tbody id="admin-moderation-list" class="divide-y divide-white/5 text-sm text-gray-300">
                                 <!-- Injected via JS -->
                             </tbody>
                         </table>
@@ -392,6 +457,100 @@
                 </div>
             </div>
 
+            <div id="view-analytics" class="view-section hidden max-w-7xl mx-auto space-y-6">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <h2 class="text-3xl font-extrabold text-gray-900">Analytiques & Prévisions</h2>
+                    
+                    <div class="flex bg-white rounded-xl shadow-sm border border-gray-100 p-1">
+                        <button onclick="window.renderAdminAnalytics('day')" id="filter-day" class="ana-filter px-4 py-1.5 text-sm font-bold rounded-lg transition-all text-gray-500 hover:bg-gray-50">Jour</button>
+                        <button onclick="window.renderAdminAnalytics('week')" id="filter-week" class="ana-filter px-4 py-1.5 text-sm font-bold rounded-lg transition-all text-gray-500 hover:bg-gray-50">Semaine</button>
+                        <button onclick="window.renderAdminAnalytics('month')" id="filter-month" class="ana-filter px-4 py-1.5 text-sm font-bold rounded-lg bg-brand-green/10 text-brand-green">Mois</button>
+                        <button onclick="window.renderAdminAnalytics('year')" id="filter-year" class="ana-filter px-4 py-1.5 text-sm font-bold rounded-lg transition-all text-gray-500 hover:bg-gray-50">Année</button>
+                    </div>
+                </div>
+
+                <!-- KPIs Analytiques -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-between hover:-translate-y-1 transition-all hover:shadow-md cursor-default">
+                        <div>
+                            <p class="text-sm font-bold text-gray-500 uppercase tracking-wider">Visiteurs Uniques</p>
+                            <h3 class="text-3xl font-extrabold text-gray-900 mt-2" id="ana-kpi-visitors">--</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+                            <i data-lucide="eye" class="text-blue-500 w-6 h-6"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-between hover:-translate-y-1 transition-all hover:shadow-md cursor-default">
+                        <div>
+                            <p class="text-sm font-bold text-gray-500 uppercase tracking-wider">Recette Générée</p>
+                            <h3 class="text-3xl font-extrabold text-brand-green mt-2" id="ana-kpi-revenue">--</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-brand-green/10 rounded-xl flex items-center justify-center">
+                            <i data-lucide="wallet" class="text-brand-green w-6 h-6"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex items-center justify-between hover:-translate-y-1 transition-all hover:shadow-md cursor-default">
+                        <div>
+                            <p class="text-sm font-bold text-gray-500 uppercase tracking-wider">Taux de Conv. VIP</p>
+                            <h3 class="text-3xl font-extrabold text-purple-600 mt-2" id="ana-kpi-conversion">--</h3>
+                        </div>
+                        <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center">
+                            <i data-lucide="percent" class="text-purple-500 w-6 h-6"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Chart -->
+                <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100">
+                    <h3 class="text-xl font-bold text-gray-900 mb-6">Évolution Fréquence & Recettes</h3>
+                    <div class="h-80 w-full relative">
+                        <canvas id="analyticsMainChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Prévisions & Anomalies -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Prévisions -->
+                    <div class="bg-gradient-to-br from-indigo-900 to-blue-900 p-6 md:p-8 rounded-3xl text-white shadow-xl relative overflow-hidden group">
+                        <i data-lucide="trending-up" class="absolute -right-4 -bottom-4 w-48 h-48 text-white/5 group-hover:scale-110 transition-transform duration-500"></i>
+                        <div class="relative z-10">
+                            <div class="flex items-center gap-2 mb-6">
+                                <div class="bg-white/20 p-2 rounded-lg"><i data-lucide="brain-circuit" class="w-5 h-5 text-blue-200"></i></div>
+                                <h3 class="text-xl font-bold">Prévisions d'Abonnement (IA)</h3>
+                            </div>
+                            <p class="text-blue-200 text-sm mb-6">Basé sur la tendance des données, voici la projection pour le cycle suivant.</p>
+                            
+                            <div class="bg-white/10 rounded-2xl p-6 backdrop-blur-sm border border-white/10">
+                                <p class="text-sm text-blue-100 font-medium">Objectif projeté :</p>
+                                <h4 class="text-4xl font-extrabold mt-1" id="ana-forecast-number">-- Abonnements</h4>
+                                
+                                <div class="w-full bg-black/20 rounded-full h-3 mt-6 mb-2 overflow-hidden">
+                                    <div class="bg-gradient-to-r from-brand-green to-blue-400 h-3 rounded-full transition-all duration-1000" id="ana-forecast-progress" style="width: 0%"></div>
+                                </div>
+                                <div class="flex justify-between text-xs text-blue-200 font-bold">
+                                    <span>Actuel: <span id="ana-forecast-current">--</span></span>
+                                    <span>Projection: <span id="ana-forecast-target">--</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Anomalies -->
+                    <div class="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-gray-100">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center gap-2">
+                                <div class="bg-red-50 p-2 rounded-lg"><i data-lucide="activity" class="w-5 h-5 text-red-500"></i></div>
+                                <h3 class="text-xl font-bold text-gray-900">Détection d'Anomalies</h3>
+                            </div>
+                            <span class="bg-gray-100 text-gray-600 px-3 py-1 text-xs font-bold rounded-full">En temps réel</span>
+                        </div>
+                        <div id="ana-anomalies-list" class="space-y-4">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div id="view-settings" class="view-section hidden max-w-7xl mx-auto">
                 <h2 class="text-3xl font-extrabold mb-6 text-gray-900">Paramètres Système</h2>
                 
@@ -409,6 +568,9 @@
                         </button>
                         <button onclick="switchSettingTab('security')" id="set-tab-security" class="setting-nav w-full flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-xl font-medium transition-all text-left">
                             <i data-lucide="shield" class="w-5 h-5"></i> Sécurité
+                        </button>
+                        <button onclick="switchSettingTab('docs')" id="set-tab-docs" class="setting-nav w-full flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-xl font-medium transition-all text-left">
+                            <i data-lucide="book-open" class="w-5 h-5"></i> Architecture & Docs
                         </button>
                     </div>
 
@@ -498,6 +660,21 @@
                                     <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-green"></div>
                                 </label>
                             </div>
+
+                            <div class="bg-gradient-to-r from-brand-green/10 to-transparent p-6 rounded-2xl border border-brand-green/20 mt-8">
+                                <h4 class="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                    <i data-lucide="star" class="w-5 h-5 text-brand-green fill-brand-green"></i> Attribuer un Accès VIP Manuellement
+                                </h4>
+                                <p class="text-sm text-gray-600 mb-4">Offrez un abonnement illimité à un éleveur spécifique (partenaires, gestes commerciaux).</p>
+                                <div class="flex flex-col sm:flex-row items-center gap-3">
+                                    <select id="vip-eleveur-select" class="flex-1 w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:ring-2 focus:ring-brand-green outline-none">
+                                        <!-- Options dynamiques -->
+                                    </select>
+                                    <button onclick="window.grantManualVIP()" class="w-full sm:w-auto bg-brand-green hover:bg-brand-dark text-white px-6 py-3 rounded-xl font-bold transition-all shadow-md shrink-0">
+                                        Confirmer l'accès
+                                    </button>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Panneau Sécurité -->
@@ -524,6 +701,23 @@
                             <button onclick="alert('Paramètres enregistrés avec succès !')" class="bg-brand-green text-white px-8 py-3 rounded-xl font-bold hover:bg-brand-dark transition-all shadow-lg shadow-brand-green/30 hover:scale-105 active:scale-95 flex items-center gap-2">
                                 <i data-lucide="save" class="w-5 h-5"></i> Enregistrer les modifications
                             </button>
+                        </div>
+                        
+                        <!-- Panneau Architecture & Docs -->
+                        <div id="set-panel-docs" class="setting-panel hidden space-y-6">
+                            <h3 class="text-xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4">Architecture & Évolution du Projet</h3>
+                            
+                            <div class="bg-blue-50 border border-blue-100 p-6 rounded-3xl relative overflow-hidden group">
+                                <i data-lucide="file-text" class="absolute -right-4 -bottom-4 w-32 h-32 text-blue-500/10 group-hover:scale-110 transition-transform duration-500"></i>
+                                <div class="relative z-10">
+                                    <h4 class="font-bold text-blue-900 text-lg mb-2">Télécharger la documentation technique</h4>
+                                    <p class="text-blue-700 text-sm mb-6 max-w-lg">Générez un document Word contenant l'historique de l'évolution du projet, l'architecture technique (HTML Vanilla, Tailwind, JS) et la table des matières détaillée.</p>
+                                    
+                                    <button onclick="window.downloadArchitectureWord()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-md shadow-blue-600/30 flex items-center gap-2 hover:scale-105 active:scale-95">
+                                        <i data-lucide="download" class="w-5 h-5"></i> Exporter en Word (.doc)
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                         
                     </div>
@@ -556,6 +750,8 @@
                     <select id="team-role" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:ring-2 focus:ring-brand-green outline-none">
                         <option value="moderator">Modérateur (Modération uniquement)</option>
                         <option value="admin">Administrateur (Accès complet)</option>
+                        <option value="comptable">Comptable (Accès aux finances)</option>
+                        <option value="superviseur">Superviseur (Vue d'ensemble)</option>
                     </select>
                 </div>
                 <div>
@@ -599,6 +795,7 @@
                 if (tabId === 'forum') window.renderAdminTickets && window.renderAdminTickets();
                 if (tabId === 'foires') window.renderAdminFoires && window.renderAdminFoires();
                 if (tabId === 'paiements') window.renderAdminTransactions && window.renderAdminTransactions();
+                if (tabId === 'analytics') window.renderAdminAnalytics && window.renderAdminAnalytics('month');
             }
 
             // Highlight selected link
@@ -823,17 +1020,17 @@
                 list.innerHTML = '';
                 pendingEleveurs.forEach(u => {
                     list.innerHTML += `
-                        <tr class="hover:bg-gray-50 transition-colors group">
+                        <tr class="hover:bg-white/5 transition-colors group border-b border-white/5">
                             <td class="p-4">
-                                <span class="inline-flex items-center gap-1.5 bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">
+                                <span class="inline-flex items-center gap-1.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-full text-xs font-bold">
                                     <i data-lucide="store" class="w-3.5 h-3.5"></i> Profil Éleveur
                                 </span>
                             </td>
-                            <td class="p-4 font-medium text-gray-900">${u.farmName || u.name}<br><span class="text-xs text-gray-500 font-normal">Attente KYC</span></td>
-                            <td class="p-4 text-gray-500">À l'instant</td>
-                            <td class="p-4"><span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold">En attente</span></td>
+                            <td class="p-4 font-medium text-white">${u.farmName || u.name}<br><span class="text-xs text-gray-500 font-normal">Attente KYC</span></td>
+                            <td class="p-4 text-gray-400">À l'instant</td>
+                            <td class="p-4"><span class="bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full text-xs font-bold">En attente</span></td>
                             <td class="p-4 text-right">
-                                <button onclick="window.switchTab('eleveurs')" class="bg-gray-200 text-gray-700 hover:bg-gray-800 hover:text-white px-4 py-1.5 rounded-lg font-semibold transition-all hover:scale-105 active:scale-95 shadow-sm">Examiner</button>
+                                <button onclick="window.switchTab('eleveurs')" class="bg-white/10 text-white hover:bg-white/20 border border-white/10 px-4 py-1.5 rounded-lg font-semibold transition-all hover:scale-105 active:scale-95 shadow-sm">Examiner</button>
                             </td>
                         </tr>
                     `;
@@ -939,16 +1136,20 @@
 
         window.renderAdminSettingsTeam = async function() {
             const users = await window.DB.getAllUsers();
-            const team = users.filter(u => u.role === 'admin' || u.role === 'moderator');
+            const teamRoles = ['admin', 'moderator', 'comptable', 'superviseur'];
+            const team = users.filter(u => teamRoles.includes(u.role));
             const list = document.getElementById('settings-team-list');
             if(!list) return;
             
             list.innerHTML = '';
             team.forEach(u => {
                 const isSuperAdmin = u.email === 'adminshewu';
-                const roleBadge = u.role === 'admin' 
-                    ? '<span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">Admin</span>'
-                    : '<span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">Modérateur</span>';
+                
+                let roleBadge = '';
+                if (u.role === 'admin') roleBadge = '<span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">Admin</span>';
+                else if (u.role === 'moderator') roleBadge = '<span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">Modérateur</span>';
+                else if (u.role === 'comptable') roleBadge = '<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold">Comptable</span>';
+                else if (u.role === 'superviseur') roleBadge = '<span class="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-bold">Superviseur</span>';
                 
                 list.innerHTML += `
                     <tr class="hover:bg-gray-50 transition-colors">
@@ -1069,6 +1270,262 @@
                 }
             }
         });
+
+        // --- LOGIQUE ANALYTIQUES AVANCEES ---
+        let analyticsChartInstance = null;
+
+        window.renderAdminAnalytics = async function(period) {
+            // Reset styles for buttons
+            document.querySelectorAll('.ana-filter').forEach(el => {
+                el.classList.remove('bg-brand-green/10', 'text-brand-green');
+                el.classList.add('text-gray-500');
+            });
+            const activeBtn = document.getElementById('filter-' + period);
+            if(activeBtn) {
+                activeBtn.classList.remove('text-gray-500');
+                activeBtn.classList.add('bg-brand-green/10', 'text-brand-green');
+            }
+
+            // Fake Data generation based on period to simulate AI/PowerBI
+            let labels = [];
+            let trafficData = [];
+            let revenueData = [];
+            let kpiVisitors = 0;
+            let kpiRevenue = 0;
+            let kpiConv = 0;
+            
+            if (period === 'day') {
+                labels = ['00h', '04h', '08h', '12h', '16h', '20h'];
+                trafficData = [50, 20, 150, 300, 400, 250];
+                revenueData = [0, 0, 15000, 45000, 60000, 15000];
+                kpiVisitors = 1170;
+                kpiRevenue = 135000;
+                kpiConv = 2.4;
+            } else if (period === 'week') {
+                labels = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+                trafficData = [1200, 1350, 1100, 1600, 1900, 2500, 2800];
+                revenueData = [45000, 30000, 30000, 75000, 150000, 225000, 300000];
+                kpiVisitors = 12450;
+                kpiRevenue = 855000;
+                kpiConv = 3.1;
+            } else if (period === 'month') {
+                labels = ['Semaine 1', 'Semaine 2', 'Semaine 3', 'Semaine 4'];
+                trafficData = [8000, 12000, 15000, 19000];
+                revenueData = [300000, 450000, 750000, 950000];
+                kpiVisitors = 54000;
+                kpiRevenue = 2450000;
+                kpiConv = 4.5;
+            } else if (period === 'year') {
+                labels = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Jui', 'Aou', 'Sep', 'Oct', 'Nov', 'Déc'];
+                trafficData = [40000, 45000, 52000, 60000, 65000, 80000, 0, 0, 0, 0, 0, 0];
+                revenueData = [1200000, 1500000, 1800000, 2200000, 2400000, 3100000, 0, 0, 0, 0, 0, 0];
+                kpiVisitors = 342000;
+                kpiRevenue = 12200000;
+                kpiConv = 5.2;
+            }
+
+            // Update KPIs
+            document.getElementById('ana-kpi-visitors').innerText = kpiVisitors.toLocaleString('fr-FR');
+            document.getElementById('ana-kpi-revenue').innerText = kpiRevenue.toLocaleString('fr-FR') + ' F';
+            document.getElementById('ana-kpi-conversion').innerText = kpiConv + '%';
+
+            // Render Chart
+            const ctx = document.getElementById('analyticsMainChart').getContext('2d');
+            if (analyticsChartInstance) {
+                analyticsChartInstance.destroy();
+            }
+
+            analyticsChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Trafic (Visiteurs)',
+                            data: trafficData,
+                            borderColor: '#3b82f6', // blue
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.4,
+                            yAxisID: 'y',
+                            fill: true
+                        },
+                        {
+                            label: 'Recettes (FCFA)',
+                            data: revenueData,
+                            borderColor: '#1E8E3E', // brand green
+                            backgroundColor: 'rgba(30, 142, 62, 0.1)',
+                            borderWidth: 3,
+                            tension: 0.4,
+                            yAxisID: 'y1',
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        tooltip: {
+                            backgroundColor: 'rgba(17, 24, 39, 0.9)',
+                            titleFont: { size: 14, family: 'Inter' },
+                            bodyFont: { size: 13, family: 'Inter' },
+                            padding: 12,
+                            cornerRadius: 8,
+                            displayColors: true,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) { label += ': '; }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y.toLocaleString('fr-FR');
+                                    }
+                                    return label;
+                                }
+                            }
+                        },
+                        legend: { position: 'top' }
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: { display: true, text: 'Visiteurs' },
+                            grid: { color: '#f3f4f6' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: { display: true, text: 'FCFA' },
+                            grid: { drawOnChartArea: false } // only want the grid lines for one axis
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // Update Forecasting
+            const currentSubs = 142; // MOCK
+            const targetSubs = period === 'day' ? 145 : period === 'week' ? 160 : period === 'month' ? 220 : 500;
+            const progress = (currentSubs / targetSubs) * 100;
+            
+            document.getElementById('ana-forecast-number').innerText = targetSubs + ' Abonnements';
+            document.getElementById('ana-forecast-current').innerText = currentSubs;
+            document.getElementById('ana-forecast-target').innerText = targetSubs;
+            setTimeout(() => {
+                document.getElementById('ana-forecast-progress').style.width = Math.min(progress, 100) + '%';
+            }, 100);
+
+            // Generate Anomalies dynamically
+            const anomaliesList = document.getElementById('ana-anomalies-list');
+            anomaliesList.innerHTML = '';
+            
+            const anomalyData = [
+                { icon: 'trending-up', color: 'green', text: `Hausse de <b>+22%</b> du trafic par rapport au précédent cycle.`, time: 'Il y a 2h' },
+                { icon: 'alert-triangle', color: 'yellow', text: `Baisse des souscriptions VIP dans la région <b>Thiès</b>.`, time: 'Il y a 5h' },
+                { icon: 'zap', color: 'blue', text: `Pic d'activité détecté sur les annonces Bovins.`, time: 'Hier' }
+            ];
+
+            // Show 1 to 3 anomalies based on period
+            const count = period === 'day' ? 1 : period === 'week' ? 2 : 3;
+            for(let i=0; i<count; i++) {
+                const a = anomalyData[i];
+                anomaliesList.innerHTML += `
+                    <div class="flex gap-4 p-4 rounded-2xl bg-gray-50 border border-gray-100 hover:bg-white hover:shadow-md transition-all cursor-default">
+                        <div class="w-10 h-10 rounded-xl bg-${a.color}-100 flex items-center justify-center shrink-0">
+                            <i data-lucide="${a.icon}" class="w-5 h-5 text-${a.color}-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-900">${a.text}</p>
+                            <span class="text-xs text-gray-500 font-medium mt-1 inline-block">${a.time}</span>
+                        </div>
+                    </div>
+                `;
+            }
+            lucide.createIcons();
+        };
+
+        // Word Export Function
+        window.downloadArchitectureWord = function() {
+            const content = `
+                <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+                <head>
+                    <meta charset='utf-8'>
+                    <title>Architecture - Coin des Éleveurs</title>
+                    <style>
+                        body { font-family: 'Arial', sans-serif; }
+                        h1 { color: #1E8E3E; text-align: center; }
+                        h2 { color: #111827; border-bottom: 2px solid #1E8E3E; padding-bottom: 5px; }
+                        ul { list-style-type: square; }
+                        .toc { background-color: #f3f4f6; padding: 20px; border-radius: 5px; }
+                    </style>
+                </head>
+                <body>
+                    <h1>Architecture et Évolution du Projet</h1>
+                    <h2>Table des Matières</h2>
+                    <div class="toc">
+                        <ol>
+                            <li>Présentation du Projet "Coin des Éleveurs"</li>
+                            <li>Stack Technique (Vanilla HTML/JS + Tailwind CSS)</li>
+                            <li>Architecture des Données (db.js & LocalStorage)</li>
+                            <li>Phases d'Évolution (V1 à V3)</li>
+                            <li>Expérience Utilisateur (UI/UX 10x)</li>
+                            <li>Rôles et Permissions Administratives</li>
+                        </ol>
+                    </div>
+
+                    <h2>1. Présentation du Projet</h2>
+                    <p>Coin des Éleveurs est une marketplace agricole sénégalaise conçue pour faciliter l'achat et la vente de bétail de prestige (Nak, Khar, Bèy, Ganaar, Fas) avec des paiements mobiles (Wave, Orange Money) et des enchères en direct.</p>
+
+                    <h2>2. Stack Technique</h2>
+                    <ul>
+                        <li><b>Frontend :</b> HTML5, Tailwind CSS (via CDN), Vanilla JavaScript.</li>
+                        <li><b>Performances :</b> Architecture hybride sans framework lourd, offrant des animations fluides (60fps) natives.</li>
+                        <li><b>Composants UI :</b> Intégration de patterns inspirés de Mobbin et Aceternity (Bento Grid, Spotlight Hero, Dynamic Island, Infinite Marquee).</li>
+                        <li><b>Icônes :</b> Lucide Icons.</li>
+                    </ul>
+
+                    <h2>3. Architecture des Données (db.js)</h2>
+                    <p>Le système repose actuellement sur une base de données locale (IndexedDB / LocalStorage via localforage.js) pour garantir la rapidité de développement et le fonctionnement offline. Il gère :</p>
+                    <ul>
+                        <li><b>Utilisateurs :</b> Admin, Éleveurs (Standard/VIP), Acheteurs, Comptables, Superviseurs.</li>
+                        <li><b>Annonces :</b> Animaux avec attributs (race, prix, catégorie, localisation).</li>
+                        <li><b>Transactions & Billetterie :</b> Historique des paiements et tickets de support.</li>
+                    </ul>
+
+                    <h2>4. Phases d'Évolution</h2>
+                    <ul>
+                        <li><b>Phase 1 :</b> Mise en place du MVP (Annonces, Profils, Messagerie).</li>
+                        <li><b>Phase 2 :</b> Refonte UI/UX "10x Developer" (Design premium, Fluidité absolue).</li>
+                        <li><b>Phase 3 :</b> Espace Administrateur avancé (Analytiques IA, Gestion des rôles, Attribution VIP).</li>
+                        <li><b>Phase 4 (Future) :</b> Migration vers un Backend Node.js/Supabase avec WebSocket pour les enchères vidéo en temps réel.</li>
+                    </ul>
+
+                    <h2>5. Rôles Administratifs</h2>
+                    <p>Le Dashboard Admin permet de segmenter les accès (RBAC) : Modérateur (Annulation/Suppression), Admin (Accès Total), Comptable (Analytiques/Finances), Superviseur (Vue Globale).</p>
+                    
+                    <hr>
+                    <p style="text-align:center; font-size: 12px; color: gray;">Document généré automatiquement le ${new Date().toLocaleDateString('fr-FR')}</p>
+                </body>
+                </html>
+            `;
+            
+            const blob = new Blob(['\ufeff', content], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'Architecture_CoinDesEleveurs.doc';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        };
 
         // Initialize dashboard correctly on page load
         document.addEventListener('DOMContentLoaded', () => {
