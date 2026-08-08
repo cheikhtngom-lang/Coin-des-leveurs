@@ -171,9 +171,11 @@
         <!-- Infinite Godly Marquee (Gallery) -->
         <div class="relative w-full overflow-hidden mt-10 z-10 py-10 reveal-up" style="animation-delay: 0.7s; transform: rotate(-2deg) scale(1.05);">
             <div class="absolute inset-0 bg-gradient-to-r from-[#0a0a0a] via-transparent to-[#0a0a0a] z-20 pointer-events-none"></div>
-            <div class="marquee-container gap-6 pl-6">
-                <!-- On duplique les images pour l'effet infini -->
-                <script>
+            <div class="marquee-container gap-6 pl-6" id="marquee-gallery">
+                <!-- Injected by JS below -->
+            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
                     const images = [
                         'https://images.unsplash.com/photo-1511117833895-4b473c0b85d6?w=600&h=400&fit=crop',
                         'https://images.unsplash.com/photo-1527153857715-3908f2bae5e8?w=600&h=400&fit=crop',
@@ -181,17 +183,22 @@
                         'https://images.unsplash.com/photo-1596733430284-f743728fb69a?w=600&h=400&fit=crop',
                         'https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=600&h=400&fit=crop'
                     ];
-                    // Duplication pour l'illusion d'infini
+                    
+                    const gallery = document.getElementById('marquee-gallery');
+                    let htmlContent = '';
+                    
                     [...images, ...images].forEach(src => {
-                        document.write(`
+                        htmlContent += `
                             <div class="w-80 h-56 md:w-96 md:h-64 rounded-3xl overflow-hidden shadow-2xl shrink-0 group relative cursor-pointer border border-white/10">
                                 <div class="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-all duration-500 z-10"></div>
                                 <img src="${src}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
                             </div>
-                        `);
+                        `;
                     });
-                </script>
-            </div>
+                    
+                    gallery.innerHTML = htmlContent;
+                });
+            </script>
         </div>
     </section>
 
