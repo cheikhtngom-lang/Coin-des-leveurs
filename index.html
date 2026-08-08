@@ -19,6 +19,22 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
+    <!-- Bot & Crawler Detection (Fix for Vercel Blank Preview) -->
+    <script>
+        if (typeof navigator !== 'undefined' && (navigator.webdriver || /bot|vercel|crawler|spider|crawling|headless/i.test(navigator.userAgent))) {
+            document.documentElement.classList.add('no-animations');
+        }
+    </script>
+    
+    <style>
+        .no-animations * {
+            animation: none !important;
+            transition: none !important;
+            opacity: 1 !important;
+            transform: none !important;
+        }
+    </style>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
