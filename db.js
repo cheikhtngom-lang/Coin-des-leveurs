@@ -5,14 +5,28 @@ class LocalDB {
     }
 
     initDefaultData() {
-        if (!localStorage.getItem('users')) {
-            localStorage.setItem('users', JSON.stringify([
-                { id: 'admin1', name: 'Admin Principal', email: 'admin@coineleveurs.com', password: 'admin', role: 'admin', status: 'active', createdAt: new Date().toISOString() }
-            ]));
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+        
+        // Force update ou création de l'admin
+        const adminIndex = users.findIndex(u => u.role === 'admin');
+        if (adminIndex !== -1) {
+            users[adminIndex].email = 'adminshewu';
+            users[adminIndex].password = '0000';
+        } else {
+            users.push({ id: 'admin1', name: 'Admin Principal', email: 'adminshewu', password: '0000', role: 'admin', status: 'active', createdAt: new Date().toISOString() });
         }
+        localStorage.setItem('users', JSON.stringify(users));
         if (!localStorage.getItem('animals')) localStorage.setItem('animals', JSON.stringify([]));
         if (!localStorage.getItem('tickets')) localStorage.setItem('tickets', JSON.stringify([]));
         if (!localStorage.getItem('forum')) localStorage.setItem('forum', JSON.stringify([]));
+        if (!localStorage.getItem('transactions')) localStorage.setItem('transactions', JSON.stringify([]));
+        if (!localStorage.getItem('platform_transactions')) localStorage.setItem('platform_transactions', JSON.stringify([
+            { id: 'pt_1', type: 'Abonnement VIP', amount: 15000, date: new Date().toISOString(), userName: 'Ferme Sokhna', status: 'completed' },
+            { id: 'pt_2', type: 'Boost Annonce', amount: 500, date: new Date().toISOString(), userName: 'Élevage de la Vallée', status: 'completed' }
+        ]));
+        if (!localStorage.getItem('foires')) localStorage.setItem('foires', JSON.stringify([
+            { id: 'foire_1', eleveurId: 'eleveur2', title: 'Live : Spéciale Tabaski 2026', date: new Date(Date.now() + 86400000 * 2).toISOString(), status: 'upcoming' }
+        ]));
     }
 
     get(collection) {
@@ -87,6 +101,30 @@ class LocalDB {
     }
 
     // --- ADMIN CONTROLS ---
+    async addTeamMember(name, email, password, role) {
+        return new Promise((resolve) => {
+            const users = this.get('users');
+            if (users.find(u => u.email === email)) {
+                resolve({ success: false, message: 'Cet email est déjà utilisé' });
+                return;
+            }
+
+            const newUser = {
+                id: 'team_' + Date.now().toString(),
+                name: name,
+                email: email,
+                password: password,
+                role: role, // 'admin' ou 'moderateur'
+                status: 'active',
+                createdAt: new Date().toISOString()
+            };
+
+            users.push(newUser);
+            this.set('users', users);
+            resolve({ success: true, user: newUser });
+        });
+    }
+
     async getAllUsers() {
         return Promise.resolve(this.get('users'));
     }
@@ -214,6 +252,33 @@ class LocalDB {
         });
     }
 
+    // --- FINANCES ---
+    async getEleveurTransactions(eleveurId) {
+        return Promise.resolve(this.get('transactions').filter(t => t.eleveurId === eleveurId).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+    }
+
+    async addTransaction(data) {
+        return new Promise((resolve) => {
+            const transactions = this.get('transactions');
+            const newTransaction = {
+                id: 'trans_' + Date.now().toString(),
+                createdAt: new Date().toISOString(),
+                ...data
+            };
+            transactions.push(newTransaction);
+            this.set('transactions', transactions);
+            resolve(newTransaction);
+        });
+    }
+
+    async deleteTransaction(id) {
+        return new Promise((resolve) => {
+            const transactions = this.get('transactions');
+            this.set('transactions', transactions.filter(t => t.id !== id));
+            resolve(true);
+        });
+    }
+
     // --- FORUM ---
     async getAllForumPosts() {
         return Promise.resolve(this.get('forum'));
@@ -298,6 +363,57 @@ class LocalDB {
             } else {
                 resolve(false);
             }
+        });
+    }
+
+    // --- ADMIN / PLATFORM ---
+    async getAllPlatformTransactions() {
+        return Promise.resolve(this.get('platform_transactions').sort((a, b) => new Date(b.date) - new Date(a.date)));
+    }
+
+    async addPlatformTransaction(data) {
+        return new Promise((resolve) => {
+            const trans = this.get('platform_transactions');
+            const newTrans = {
+                id: 'pt_' + Date.now().toString(),
+                date: new Date().toISOString(),
+                status: 'completed',
+                ...data
+            };
+            trans.push(newTrans);
+            this.set('platform_transactions', trans);
+            resolve(newTrans);
+        });
+    }
+
+    async getAllFoires() {
+        return Promise.resolve(this.get('foires'));
+    }
+
+    async deleteFoire(id) {
+        return new Promise((resolve) => {
+            const foires = this.get('foires');
+            this.set('foires', foires.filter(f => f.id !== id));
+            resolve(true);
+        });
+    }
+
+    async getAdminStats() {
+        const trans = this.get('platform_transactions');
+        const revenue = trans.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+        
+        const users = this.get('users');
+        const eleveursVIP = users.filter(u => u.role === 'eleveur' && u.subscription === 'unlimited').length;
+        const totalAcheteurs = users.filter(u => u.role === 'user').length;
+        
+        const animals = this.get('animals');
+        const activeAnimals = animals.filter(a => a.status === 'disponible' || !a.status).length;
+        
+        return Promise.resolve({
+            revenue,
+            eleveursVIP,
+            totalAcheteurs,
+            activeAnimals
         });
     }
 }

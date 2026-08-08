@@ -3,21 +3,12 @@ echo ========================================
 echo   Mise a jour vers GitHub
 echo ========================================
 
-set /p message="Entrez le message de commit : "
-
-if "%message%"=="" (
-    echo Le message de commit ne peut pas etre vide.
-    pause
-    exit /b
-)
-
-echo.
 echo Ajout des fichiers...
 git add .
 
 echo.
 echo Creation du commit...
-git commit -m "%message%"
+git commit -m "Mise a jour automatique du %date% a %time%"
 
 echo.
 echo Envoi vers GitHub...

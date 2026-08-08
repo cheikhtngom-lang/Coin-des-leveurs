@@ -37,12 +37,14 @@
         }
     </script>
     
-    <!-- Icons -->
+    <!-- Icons & Charts -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="db.js"></script>
     <script>
         window.currentUser = window.requireAuth(['admin']);
     </script>
+</head>
+<body class="flex h-screen overflow-hidden bg-gray-50 font-sans">
 
     <!-- Sidebar Admin (Dark Theme) -->
     <aside class="w-64 bg-admin border-r border-gray-800 hidden md:flex flex-col h-full z-20 shadow-2xl text-white">
@@ -161,8 +163,8 @@
                                 <i data-lucide="trending-up" class="w-4 h-4"></i> +15%
                             </span>
                         </div>
-                        <h3 class="text-4xl font-extrabold text-gray-900 mb-1">12.5M <span class="text-lg text-gray-500">FCFA</span></h3>
-                        <p class="text-gray-500 font-medium">Revenus (Ce mois)</p>
+                        <h3 class="text-4xl font-extrabold text-gray-900 mb-1" id="stat-revenus">0 <span class="text-lg text-gray-500">FCFA</span></h3>
+                        <p class="text-gray-500 font-medium">Revenus (Total)</p>
                     </div>
 
                     <!-- Éleveurs Actifs -->
@@ -175,8 +177,8 @@
                                 <i data-lucide="trending-up" class="w-4 h-4"></i> +8
                             </span>
                         </div>
-                        <h3 class="text-4xl font-extrabold text-gray-900 mb-1">142</h3>
-                        <p class="text-gray-500 font-medium">Éleveurs Premium</p>
+                        <h3 class="text-4xl font-extrabold text-gray-900 mb-1" id="stat-eleveurs-vip">0</h3>
+                        <p class="text-gray-500 font-medium">Éleveurs VIP</p>
                     </div>
 
                     <!-- Utilisateurs -->
@@ -189,7 +191,7 @@
                                 <i data-lucide="trending-up" class="w-4 h-4"></i> +45%
                             </span>
                         </div>
-                        <h3 class="text-4xl font-extrabold text-gray-900 mb-1">4,890</h3>
+                        <h3 class="text-4xl font-extrabold text-gray-900 mb-1" id="stat-acheteurs">0</h3>
                         <p class="text-gray-500 font-medium">Acheteurs Inscrits</p>
                     </div>
 
@@ -203,7 +205,7 @@
                                 <i data-lucide="trending-down" class="w-4 h-4"></i> -2%
                             </span>
                         </div>
-                        <h3 class="text-4xl font-extrabold text-gray-900 mb-1">1,204</h3>
+                        <h3 class="text-4xl font-extrabold text-gray-900 mb-1" id="stat-annonces">0</h3>
                         <p class="text-gray-500 font-medium">Annonces Actives</p>
                     </div>
                 </div>
@@ -243,52 +245,8 @@
                                     <th class="p-4 font-semibold text-right">Action</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-100 text-sm">
-                                <tr class="hover:bg-gray-50 transition-colors group">
-                                    <td class="p-4">
-                                        <span class="inline-flex items-center gap-1.5 bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">
-                                            <i data-lucide="store" class="w-3.5 h-3.5"></i> Profil Éleveur
-                                        </span>
-                                    </td>
-                                    <td class="p-4 font-medium text-gray-900">Ferme Sokhna<br><span class="text-xs text-gray-500 font-normal">Nouveau compte Premium</span></td>
-                                    <td class="p-4 text-gray-500">Il y a 10 min</td>
-                                    <td class="p-4"><span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold">En attente</span></td>
-                                    <td class="p-4 text-right">
-                                        <div class="flex justify-end gap-2">
-                                            <button class="bg-green-100 text-green-700 hover:bg-green-600 hover:text-white px-3 py-1.5 rounded-lg font-semibold transition-all hover:scale-105 active:scale-95 shadow-sm">Valider</button>
-                                            <button class="bg-red-100 text-red-700 hover:bg-red-600 hover:text-white px-3 py-1.5 rounded-lg font-semibold transition-all hover:scale-105 active:scale-95 shadow-sm">Refuser</button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr class="hover:bg-gray-50 transition-colors group">
-                                    <td class="p-4">
-                                        <span class="inline-flex items-center gap-1.5 bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-bold">
-                                            <i data-lucide="paw-print" class="w-3.5 h-3.5"></i> Annonce
-                                        </span>
-                                    </td>
-                                    <td class="p-4 font-medium text-gray-900">Taureau Gobra 800kg<br><span class="text-xs text-gray-500 font-normal">Signalement utilisateur</span></td>
-                                    <td class="p-4 text-gray-500">Il y a 1 heure</td>
-                                    <td class="p-4"><span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">Signalé</span></td>
-                                    <td class="p-4 text-right">
-                                        <button class="bg-gray-200 text-gray-700 hover:bg-gray-800 hover:text-white px-4 py-1.5 rounded-lg font-semibold transition-all hover:scale-105 active:scale-95 shadow-sm">Examiner</button>
-                                    </td>
-                                </tr>
-                                <tr class="hover:bg-gray-50 transition-colors group">
-                                    <td class="p-4">
-                                        <span class="inline-flex items-center gap-1.5 bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold">
-                                            <i data-lucide="message-square" class="w-3.5 h-3.5"></i> Forum
-                                        </span>
-                                    </td>
-                                    <td class="p-4 font-medium text-gray-900">Sujet: "Vaccin FMD"<br><span class="text-xs text-gray-500 font-normal">Contient mots-clés interdits</span></td>
-                                    <td class="p-4 text-gray-500">Il y a 3 heures</td>
-                                    <td class="p-4"><span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold">En attente</span></td>
-                                    <td class="p-4 text-right">
-                                        <div class="flex justify-end gap-2">
-                                            <button class="bg-green-100 text-green-700 hover:bg-green-600 hover:text-white px-3 py-1.5 rounded-lg font-semibold transition-all hover:scale-105 active:scale-95 shadow-sm">Approuver</button>
-                                            <button class="bg-red-100 text-red-700 hover:bg-red-600 hover:text-white px-3 py-1.5 rounded-lg font-semibold transition-all hover:scale-105 active:scale-95 shadow-sm">Supprimer</button>
-                                        </div>
-                                    </td>
-                                </tr>
+                            <tbody id="admin-moderation-list" class="divide-y divide-gray-100 text-sm">
+                                <!-- Injected via JS -->
                             </tbody>
                         </table>
                     </div>
@@ -392,9 +350,23 @@
 
             <div id="view-foires" class="view-section hidden max-w-7xl mx-auto">
                 <h2 class="text-3xl font-extrabold mb-6 text-gray-900">Gestion Foires (Live)</h2>
-                <div class="bg-white p-12 rounded-3xl shadow-sm text-center border border-gray-100">
-                    <i data-lucide="video" class="w-16 h-16 mx-auto mb-4 text-gray-300"></i>
-                    <p class="text-gray-500 text-lg font-medium">Le module de foires en direct est en cours de développement.</p>
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-100">
+                                    <th class="p-4 font-semibold">Titre de la foire</th>
+                                    <th class="p-4 font-semibold">Organisateur</th>
+                                    <th class="p-4 font-semibold">Date prévue</th>
+                                    <th class="p-4 font-semibold">Statut</th>
+                                    <th class="p-4 font-semibold text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-foires-list" class="divide-y divide-gray-100 text-sm">
+                                <!-- Dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -429,8 +401,11 @@
                         <button onclick="switchSettingTab('general')" id="set-tab-general" class="setting-nav w-full flex items-center gap-3 px-4 py-3 bg-brand-green/10 text-brand-green rounded-xl font-bold transition-all text-left">
                             <i data-lucide="globe" class="w-5 h-5"></i> Général
                         </button>
+                        <button onclick="switchSettingTab('team')" id="set-tab-team" class="setting-nav w-full flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-xl font-medium transition-all text-left">
+                            <i data-lucide="users" class="w-5 h-5"></i> Équipe & Rôles
+                        </button>
                         <button onclick="switchSettingTab('finance')" id="set-tab-finance" class="setting-nav w-full flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-xl font-medium transition-all text-left">
-                            <i data-lucide="dollar-sign" class="w-5 h-5"></i> Tarification & Taxes
+                            <i data-lucide="dollar-sign" class="w-5 h-5"></i> Tarification & Accès VIP
                         </button>
                         <button onclick="switchSettingTab('security')" id="set-tab-security" class="setting-nav w-full flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-xl font-medium transition-all text-left">
                             <i data-lucide="shield" class="w-5 h-5"></i> Sécurité
@@ -463,6 +438,31 @@
                                     <input type="checkbox" class="sr-only peer">
                                     <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
                                 </label>
+                            </div>
+                        </div>
+
+                        <!-- Panneau Équipe & Rôles -->
+                        <div id="set-panel-team" class="setting-panel hidden space-y-6">
+                            <div class="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
+                                <h3 class="text-xl font-bold text-gray-900">Équipe & Rôles</h3>
+                                <button onclick="document.getElementById('modal-add-team').classList.remove('hidden')" class="bg-admin hover:bg-gray-800 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-lg hover:-translate-y-0.5">
+                                    <i data-lucide="user-plus" class="w-4 h-4"></i> Inviter
+                                </button>
+                            </div>
+                            
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-100">
+                                            <th class="p-4 font-semibold">Membre</th>
+                                            <th class="p-4 font-semibold">Rôle</th>
+                                            <th class="p-4 font-semibold">Statut</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="settings-team-list" class="divide-y divide-gray-100 text-sm">
+                                        <!-- Dynamique via JS -->
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 
@@ -533,6 +533,43 @@
         </div>
     </main>
 
+    <!-- Modal Ajout Équipe -->
+    <div id="modal-add-team" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-all duration-300">
+        <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden transform transition-all">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <h3 class="text-xl font-bold text-gray-900 flex items-center gap-2"><i data-lucide="user-plus" class="w-5 h-5 text-brand-green"></i> Nouveau Collaborateur</h3>
+                <button onclick="document.getElementById('modal-add-team').classList.add('hidden')" class="text-gray-400 hover:text-red-500 transition-colors">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Nom complet</label>
+                    <input type="text" id="team-name" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:ring-2 focus:ring-brand-green outline-none" placeholder="Ex: Jean Dupont">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Email</label>
+                    <input type="email" id="team-email" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:ring-2 focus:ring-brand-green outline-none" placeholder="jean@coindeseleveurs.sn">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Rôle</label>
+                    <select id="team-role" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:ring-2 focus:ring-brand-green outline-none">
+                        <option value="moderator">Modérateur (Modération uniquement)</option>
+                        <option value="admin">Administrateur (Accès complet)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Mot de passe temporaire</label>
+                    <input type="password" id="team-password" class="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 focus:ring-2 focus:ring-brand-green outline-none" placeholder="••••••••">
+                </div>
+            </div>
+            <div class="p-6 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+                <button onclick="document.getElementById('modal-add-team').classList.add('hidden')" class="px-6 py-2.5 rounded-xl font-bold text-gray-600 hover:bg-gray-200 transition-colors">Annuler</button>
+                <button onclick="window.submitAddTeam()" class="bg-brand-green hover:bg-brand-dark text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-brand-green/30 transition-all">Créer le compte</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         lucide.createIcons();
 
@@ -555,10 +592,12 @@
             if(selectedView) {
                 selectedView.classList.remove('hidden');
                 selectedView.classList.add('block');
+                if (tabId === 'overview') window.renderAdminOverview && window.renderAdminOverview();
                 if (tabId === 'users') window.renderAdminUsers();
                 if (tabId === 'eleveurs') window.renderAdminEleveurs();
                 if (tabId === 'animaux') window.renderAdminAnimaux();
                 if (tabId === 'forum') window.renderAdminTickets && window.renderAdminTickets();
+                if (tabId === 'foires') window.renderAdminFoires && window.renderAdminFoires();
                 if (tabId === 'paiements') window.renderAdminTransactions && window.renderAdminTransactions();
             }
 
@@ -769,8 +808,78 @@
             lucide.createIcons();
         }
 
+        window.renderAdminOverview = async function() {
+            const stats = await window.DB.getAdminStats();
+            document.getElementById('stat-revenus').innerHTML = `${stats.revenue.toLocaleString()} <span class="text-lg text-gray-500">FCFA</span>`;
+            document.getElementById('stat-eleveurs-vip').innerHTML = stats.eleveursVIP;
+            document.getElementById('stat-acheteurs').innerHTML = stats.totalAcheteurs;
+            document.getElementById('stat-annonces').innerHTML = stats.activeAnimals;
+
+            const allUsers = await window.DB.getAllUsers();
+            const pendingEleveurs = allUsers.filter(u => u.role === 'eleveur' && !u.isVerified).slice(0, 5); // limit to 5
+            
+            const list = document.getElementById('admin-moderation-list');
+            if(list) {
+                list.innerHTML = '';
+                pendingEleveurs.forEach(u => {
+                    list.innerHTML += `
+                        <tr class="hover:bg-gray-50 transition-colors group">
+                            <td class="p-4">
+                                <span class="inline-flex items-center gap-1.5 bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">
+                                    <i data-lucide="store" class="w-3.5 h-3.5"></i> Profil Éleveur
+                                </span>
+                            </td>
+                            <td class="p-4 font-medium text-gray-900">${u.farmName || u.name}<br><span class="text-xs text-gray-500 font-normal">Attente KYC</span></td>
+                            <td class="p-4 text-gray-500">À l'instant</td>
+                            <td class="p-4"><span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold">En attente</span></td>
+                            <td class="p-4 text-right">
+                                <button onclick="window.switchTab('eleveurs')" class="bg-gray-200 text-gray-700 hover:bg-gray-800 hover:text-white px-4 py-1.5 rounded-lg font-semibold transition-all hover:scale-105 active:scale-95 shadow-sm">Examiner</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                if (pendingEleveurs.length === 0) {
+                    list.innerHTML = `<tr><td colspan="5" class="p-8 text-center text-gray-500">Aucune modération en attente.</td></tr>`;
+                }
+            }
+            lucide.createIcons();
+        }
+
+        window.renderAdminFoires = async function() {
+            const foires = await window.DB.getAllFoires();
+            const list = document.getElementById('admin-foires-list');
+            if(!list) return;
+            list.innerHTML = '';
+
+            if (foires.length === 0) {
+                list.innerHTML = '<tr><td colspan="5" class="p-8 text-center text-gray-500">Aucune foire programmée.</td></tr>';
+            }
+
+            const allUsers = await window.DB.getAllUsers();
+
+            foires.forEach(f => {
+                const owner = allUsers.find(u => u.id === f.eleveurId) || { name: 'Inconnu' };
+                const dateObj = new Date(f.date);
+                const dateStr = dateObj.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+                
+                list.innerHTML += `
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="p-4 font-bold text-gray-900">${f.title}</td>
+                        <td class="p-4 text-gray-600">${owner.farmName || owner.name}</td>
+                        <td class="p-4 text-gray-500 text-sm">${dateStr}</td>
+                        <td class="p-4"><span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">Programmée</span></td>
+                        <td class="p-4 text-right">
+                            <button onclick="window.DB.deleteFoire('${f.id}').then(() => window.renderAdminFoires())" class="bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1"><i data-lucide="trash-2" class="w-3 h-3"></i> Annuler</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            lucide.createIcons();
+        }
+
         window.renderAdminTransactions = async function() {
-            const trans = await window.DB.getAllTransactions();
+            const trans = await window.DB.getAllPlatformTransactions();
             const list = document.getElementById('admin-transactions-list');
             if(!list) return;
             list.innerHTML = '';
@@ -780,9 +889,12 @@
                     ? '<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold"><i data-lucide="check" class="w-3 h-3 inline mr-1"></i>Réussi</span>' 
                     : '<span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold"><i data-lucide="clock" class="w-3 h-3 inline mr-1"></i>En attente</span>';
 
+                const dateObj = new Date(t.date);
+                const dateStr = dateObj.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+
                 list.innerHTML += `
                     <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="p-4 text-gray-500 font-medium">${t.date}</td>
+                        <td class="p-4 text-gray-500 font-medium">${dateStr}</td>
                         <td class="p-4 font-bold text-gray-900">${t.userName}</td>
                         <td class="p-4 text-gray-600">${t.type}</td>
                         <td class="p-4 font-bold ${t.amount > 10000 ? 'text-brand-green' : 'text-gray-900'}">${t.amount.toLocaleString('fr-FR')}</td>
@@ -819,7 +931,89 @@
                 selectedTab.classList.remove('text-gray-600');
                 selectedTab.classList.add('bg-brand-green/10', 'text-brand-green');
             }
+
+            // Call specific renders
+            if (tabName === 'team') window.renderAdminSettingsTeam();
+            if (tabName === 'finance') window.renderAdminSettingsVIP();
         }
+
+        window.renderAdminSettingsTeam = async function() {
+            const users = await window.DB.getAllUsers();
+            const team = users.filter(u => u.role === 'admin' || u.role === 'moderator');
+            const list = document.getElementById('settings-team-list');
+            if(!list) return;
+            
+            list.innerHTML = '';
+            team.forEach(u => {
+                const isSuperAdmin = u.email === 'adminshewu';
+                const roleBadge = u.role === 'admin' 
+                    ? '<span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold">Admin</span>'
+                    : '<span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">Modérateur</span>';
+                
+                list.innerHTML += `
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="p-4">
+                            <p class="font-bold text-gray-900">${u.name || 'Membre'}</p>
+                            <p class="text-xs text-gray-500">${u.email}</p>
+                        </td>
+                        <td class="p-4">${roleBadge} ${isSuperAdmin ? '<span class="text-xs text-gray-400 ml-2">(Super Admin)</span>' : ''}</td>
+                        <td class="p-4"><span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold flex inline-flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i>Actif</span></td>
+                    </tr>
+                `;
+            });
+            lucide.createIcons();
+        };
+
+        window.submitAddTeam = async function() {
+            const name = document.getElementById('team-name').value;
+            const email = document.getElementById('team-email').value;
+            const role = document.getElementById('team-role').value;
+            const password = document.getElementById('team-password').value;
+
+            if(!name || !email || !password) {
+                alert('Veuillez remplir tous les champs');
+                return;
+            }
+
+            const res = await window.DB.addTeamMember(name, email, password, role);
+            if(res.success) {
+                document.getElementById('modal-add-team').classList.add('hidden');
+                document.getElementById('team-name').value = '';
+                document.getElementById('team-email').value = '';
+                document.getElementById('team-password').value = '';
+                window.renderAdminSettingsTeam();
+            } else {
+                alert(res.message);
+            }
+        };
+
+        window.renderAdminSettingsVIP = async function() {
+            const users = await window.DB.getAllUsers();
+            const eleveurs = users.filter(u => u.role === 'eleveur' && u.subscription !== 'unlimited');
+            const select = document.getElementById('vip-eleveur-select');
+            if(!select) return;
+
+            select.innerHTML = '<option value="">-- Sélectionner un éleveur --</option>';
+            eleveurs.forEach(u => {
+                const name = u.farmName || u.name;
+                select.innerHTML += `<option value="${u.id}">${name} (${u.email})</option>`;
+            });
+        };
+
+        window.grantManualVIP = async function() {
+            const select = document.getElementById('vip-eleveur-select');
+            const userId = select.value;
+            if(!userId) {
+                alert('Veuillez sélectionner un éleveur.');
+                return;
+            }
+
+            const res = await window.DB.grantUnlimited(userId);
+            if(res) {
+                alert('Accès VIP accordé avec succès !');
+                window.renderAdminSettingsVIP(); // Refresh list
+            }
+        };
 
         // Chart.js Configuration
         const ctxGrowth = document.getElementById('growthChart').getContext('2d');
@@ -874,6 +1068,11 @@
                     }
                 }
             }
+        });
+
+        // Initialize dashboard correctly on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            window.switchTab('overview');
         });
     </script>
 </body>

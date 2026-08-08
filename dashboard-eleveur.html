@@ -67,6 +67,9 @@
                 <a href="#" onclick="switchTab('analytics')" class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300" id="link-analytics">
                     <i data-lucide="bar-chart-2" class="w-5 h-5"></i> Analytique
                 </a>
+                <a href="#" onclick="switchTab('finance')" class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300" id="link-finance">
+                    <i data-lucide="wallet" class="w-5 h-5"></i> Gestion Financière
+                </a>
                 <a href="#" onclick="switchTab('animals')" class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300" id="link-animals">
                     <i data-lucide="paw-print" class="w-5 h-5"></i> Mes animaux
                 </a>
@@ -341,6 +344,97 @@
                         <div class="relative w-full h-72">
                             <canvas id="inventoryBarChart"></canvas>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View: Finance -->
+            <div id="view-finance" class="tab-view hidden max-w-7xl mx-auto space-y-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-gray-900">Gestion Financière</h2>
+                </div>
+
+                <!-- KPIs -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm border-l-4 border-l-brand-green">
+                        <p class="text-sm font-semibold text-gray-500 mb-1">Total Revenus</p>
+                        <h3 class="text-3xl font-extrabold text-gray-900 mb-2" id="finance-total-revenus">0 <span class="text-lg text-gray-500 font-normal">FCFA</span></h3>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm border-l-4 border-l-red-500">
+                        <p class="text-sm font-semibold text-gray-500 mb-1">Total Dépenses</p>
+                        <h3 class="text-3xl font-extrabold text-gray-900 mb-2" id="finance-total-depenses">0 <span class="text-lg text-gray-500 font-normal">FCFA</span></h3>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm border-l-4 border-l-blue-500">
+                        <p class="text-sm font-semibold text-gray-500 mb-1">Bénéfice Net</p>
+                        <h3 class="text-3xl font-extrabold text-gray-900 mb-2" id="finance-net">0 <span class="text-lg text-gray-500 font-normal">FCFA</span></h3>
+                    </div>
+                </div>
+
+                <!-- Add Transaction & Chart -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Form -->
+                    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+                        <h3 class="text-lg font-bold text-gray-900 mb-4">Nouvelle Transaction</h3>
+                        <form id="finance-form" class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-1">Type</label>
+                                    <select id="finance-type" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-brand-green focus:border-brand-green">
+                                        <option value="income">Revenu</option>
+                                        <option value="expense">Dépense</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-700 mb-1">Catégorie</label>
+                                    <select id="finance-category" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-brand-green focus:border-brand-green">
+                                        <option value="Vente d'animal">Vente d'animal</option>
+                                        <option value="Alimentation">Alimentation</option>
+                                        <option value="Soins vétérinaires">Soins vétérinaires</option>
+                                        <option value="Transport">Transport</option>
+                                        <option value="Main d'œuvre">Main d'œuvre</option>
+                                        <option value="Autre">Autre</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-1">Montant (FCFA)</label>
+                                <input type="number" id="finance-amount" required min="1" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-brand-green focus:border-brand-green">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-1">Description (Optionnelle)</label>
+                                <input type="text" id="finance-description" placeholder="Ex: Achat foin" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-brand-green focus:border-brand-green">
+                            </div>
+                            <button type="submit" class="w-full py-2.5 bg-brand-green hover:bg-brand-dark text-white font-bold rounded-xl transition-colors shadow-md">Enregistrer</button>
+                        </form>
+                    </div>
+
+                    <!-- Chart -->
+                    <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col">
+                        <h3 class="text-lg font-bold text-gray-900 mb-4">Répartition des Dépenses</h3>
+                        <div class="relative w-full h-64 flex-1">
+                            <canvas id="financeExpenseChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History -->
+                <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4">Historique des Transactions</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
+                            <thead class="text-xs text-gray-500 uppercase bg-gray-50 border-b">
+                                <tr>
+                                    <th class="px-4 py-3">Date</th>
+                                    <th class="px-4 py-3">Catégorie</th>
+                                    <th class="px-4 py-3">Description</th>
+                                    <th class="px-4 py-3 text-right">Montant</th>
+                                    <th class="px-4 py-3 text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="finance-history-list" class="divide-y divide-gray-100">
+                                <!-- Injected by JS -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -763,12 +857,8 @@
             window.switchTab('dashboard');
             initAnalyticsCharts();
             window.renderAnimals();
+            window.renderFinances();
 
-            // Onboarding Check
-            const urlParams = new URLSearchParams(window.location.search);
-            if(urlParams.get('onboarding') === 'true') {
-                setTimeout(() => window.openAddAnimalModal(), 600);
-            }
         });
 
         const config = {
@@ -1149,6 +1239,140 @@
             closeOnboardingModal();
             openAddAnimalModal();
         }
+
+        window.financeExpenseChartInstance = null;
+
+        window.renderFinances = async function() {
+            if(!window.currentUser) return;
+            const transactions = await window.DB.getEleveurTransactions(window.currentUser.id);
+            
+            let totalIncome = 0;
+            let totalExpense = 0;
+            const expenseCategories = {};
+            
+            const tbody = document.getElementById('finance-history-list');
+            if(!tbody) return;
+            
+            tbody.innerHTML = '';
+
+            if (transactions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-4 text-center text-gray-500 font-medium">Aucune transaction enregistrée.</td></tr>';
+            }
+
+            transactions.forEach(t => {
+                const amount = Number(t.amount);
+                if (t.type === 'income') {
+                    totalIncome += amount;
+                } else {
+                    totalExpense += amount;
+                    expenseCategories[t.category] = (expenseCategories[t.category] || 0) + amount;
+                }
+
+                const dateObj = new Date(t.createdAt);
+                const dateStr = dateObj.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+                
+                const isIncome = t.type === 'income';
+                
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="px-4 py-3 whitespace-nowrap text-gray-700">${dateStr}</td>
+                        <td class="px-4 py-3 whitespace-nowrap"><span class="px-2 py-1 text-[10px] font-bold uppercase rounded-lg ${isIncome ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${t.category}</span></td>
+                        <td class="px-4 py-3 text-gray-600 truncate max-w-[150px]" title="${t.description || ''}">${t.description || '-'}</td>
+                        <td class="px-4 py-3 text-right font-bold ${isIncome ? 'text-brand-green' : 'text-red-500'}">${isIncome ? '+' : '-'}${amount.toLocaleString()}</td>
+                        <td class="px-4 py-3 text-center">
+                            <button onclick="window.deleteTransaction('${t.id}')" class="text-gray-400 hover:text-red-600 p-1 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            lucide.createIcons();
+
+            const net = totalIncome - totalExpense;
+            
+            document.getElementById('finance-total-revenus').innerHTML = `${totalIncome.toLocaleString()} <span class="text-lg text-gray-500 font-normal">FCFA</span>`;
+            document.getElementById('finance-total-depenses').innerHTML = `${totalExpense.toLocaleString()} <span class="text-lg text-gray-500 font-normal">FCFA</span>`;
+            
+            const netEl = document.getElementById('finance-net');
+            netEl.innerHTML = `${net.toLocaleString()} <span class="text-lg text-gray-500 font-normal">FCFA</span>`;
+            if(net < 0) {
+                netEl.classList.remove('text-gray-900');
+                netEl.classList.add('text-red-600');
+            } else {
+                netEl.classList.add('text-gray-900');
+                netEl.classList.remove('text-red-600');
+            }
+
+            // Update Chart
+            const canvas = document.getElementById('financeExpenseChart');
+            if(!canvas) return;
+            const ctxChart = canvas.getContext('2d');
+            const labels = Object.keys(expenseCategories);
+            const data = Object.values(expenseCategories);
+            
+            if (window.financeExpenseChartInstance) {
+                window.financeExpenseChartInstance.destroy();
+            }
+            
+            if (labels.length > 0) {
+                window.financeExpenseChartInstance = new Chart(ctxChart, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: ['#f87171', '#fbbf24', '#60a5fa', '#a78bfa', '#34d399', '#9ca3af'],
+                            borderWidth: 0,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'right', labels: { usePointStyle: true, padding: 15 } }
+                        },
+                        cutout: '65%'
+                    }
+                });
+            } else {
+                // Draw empty text
+                ctxChart.clearRect(0,0, canvas.width, canvas.height);
+                ctxChart.font = '14px Inter';
+                ctxChart.fillStyle = '#9ca3af';
+                ctxChart.textAlign = 'center';
+                ctxChart.fillText('Aucune dépense', canvas.width/2, canvas.height/2);
+            }
+        };
+
+        const financeForm = document.getElementById('finance-form');
+        if(financeForm) {
+            financeForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if(!window.currentUser) return;
+                
+                const type = document.getElementById('finance-type').value;
+                const category = document.getElementById('finance-category').value;
+                const amount = document.getElementById('finance-amount').value;
+                const description = document.getElementById('finance-description').value;
+                
+                await window.DB.addTransaction({
+                    eleveurId: window.currentUser.id,
+                    type, category, amount, description
+                });
+                
+                financeForm.reset();
+                window.renderFinances();
+            });
+        }
+
+        window.deleteTransaction = async function(id) {
+            if(confirm('Voulez-vous supprimer cette transaction ?')) {
+                await window.DB.deleteTransaction(id);
+                window.renderFinances();
+            }
+        }
+
     </script>
 </body>
 </html>
