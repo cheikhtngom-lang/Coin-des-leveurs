@@ -593,10 +593,10 @@
     <script>
         lucide.createIcons();
 
+        // Check authentication status to update UI
+        // Since Firebase Auth is async, we can wait a bit or listen to auth state.
+        // For simplicity, we just use the current user if available in DB.
         document.addEventListener('DOMContentLoaded', () => {
-            renderAnimals();
-            
-            // Check auth state for header
             const currentUser = localStorage.getItem('currentUser');
             if (currentUser) {
                 const user = JSON.parse(currentUser);
@@ -611,24 +611,30 @@
             }
         });
 
-        function renderAnimals() {
+        async function renderAnimals() {
             const list = document.getElementById('animaux-liste');
-            const animals = DB.getAllAnimals();
+            list.innerHTML = `<div class="col-span-3 text-center py-10 text-gray-500">Chargement des animaux...</div>`;
+            
+            const animals = await window.DB.getAllAnimals();
             
             if (animals.length === 0) {
                 list.innerHTML = `<div class="col-span-3 text-center py-10 text-gray-500">Aucun animal disponible pour le moment.</div>`;
                 return;
             }
 
+            // Mettre les animaux "à la une" en premier
+            animals.sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0));
+
             // Get users to display farm names
-            const users = DB.get('users');
+            const users = await window.DB.get('users');
 
             list.innerHTML = animals.map(a => {
                 const owner = users.find(u => u.id === a.eleveurId) || { farmName: 'Éleveur inconnu' };
                 
                 return `
-                <div class="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-300 w-[300px] md:w-[350px] shrink-0 snap-start flex flex-col justify-between">
-                    <div class="relative h-64 overflow-hidden">
+                <div class="group bg-white rounded-3xl overflow-hidden border ${a.isFeatured ? 'border-gold ring-2 ring-gold/20' : 'border-gray-100'} shadow-sm hover:shadow-2xl transition-all duration-300 w-[300px] md:w-[350px] shrink-0 snap-start flex flex-col justify-between relative">
+                    ${a.isFeatured ? `<div class="absolute top-0 left-1/2 -translate-x-1/2 bg-gold text-white text-[10px] font-bold px-3 py-0.5 rounded-b-lg z-20 shadow-sm flex items-center gap-1"><i data-lucide="star" class="w-3 h-3 fill-current"></i> À LA UNE</div>` : ''}
+                    <div class="relative h-64 overflow-hidden bg-gray-50">
                         <img src="${a.image || 'https://images.unsplash.com/photo-1511117833895-4b473c0b85d6?auto=format&fit=crop&w=800&q=80'}" alt="${a.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                         <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-sm font-bold text-gray-900 flex items-center gap-1 shadow-sm">
                             <i data-lucide="shield-check" class="w-4 h-4 text-brand-green"></i> Vérifié
@@ -651,7 +657,7 @@
                             <div class="flex items-center gap-2 col-span-2 truncate"><i data-lucide="user" class="w-4 h-4"></i> ${owner.farmName || owner.name}</div>
                         </div>
                         <div class="flex gap-3">
-                            <button class="flex-1 bg-gray-50 hover:bg-brand-green hover:text-white text-gray-900 py-3 rounded-xl font-semibold transition-colors duration-300 border border-gray-200 hover:border-brand-green">
+                            <button onclick="window.location.href='annonce.html?id=${a.id}'" class="flex-1 bg-gray-50 hover:bg-brand-green hover:text-white text-gray-900 py-3 rounded-xl font-semibold transition-colors duration-300 border border-gray-200 hover:border-brand-green">
                                 Voir l'annonce
                             </button>
                             <button onclick="openChatModal()" class="w-12 flex-shrink-0 flex items-center justify-center bg-brand-green/10 text-brand-green hover:bg-brand-green hover:text-white rounded-xl transition-all duration-300 shadow-sm border border-brand-green/20" title="Contacter l'éleveur (Vocal ou Texte)">
@@ -667,11 +673,14 @@
             lucide.createIcons();
         }
 
-        // Chat Modal functions
-        function openChatModal() {
+        // Call the async function
+        renderAnimals();
+
+        // Chat Modal functions attached to window for inline onclick access
+        window.openChatModal = function() {
             document.getElementById('chatModal').classList.remove('hidden');
         }
-        function closeChatModal() {
+        window.closeChatModal = function() {
             document.getElementById('chatModal').classList.add('hidden');
         }
 

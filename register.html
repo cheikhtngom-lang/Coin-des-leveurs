@@ -139,7 +139,7 @@
         btnVet.addEventListener('click', () => { currentUserType = 'veterinaire'; updateRoleButtons(); });
 
         // Simuler la géolocalisation pour le prototype
-        function getLocation() {
+        window.getLocation = function() {
             const btn = document.querySelector('button[title="Obtenir ma position"] i');
             btn.classList.add('animate-pulse');
             setTimeout(() => {
@@ -149,7 +149,7 @@
             }, 1000);
         }
 
-        submitBtn.addEventListener('click', () => {
+        submitBtn.addEventListener('click', async () => {
             const nom = document.getElementById('nom').value;
             const email = document.getElementById('email-address').value;
             const password = document.getElementById('password').value;
@@ -173,17 +173,46 @@
                 data.location = loc;
             }
 
-            const result = DB.register(data);
-            
-            if (result.success) {
-                // Pour l'instant on redirige le véto vers l'interface utilisateur classique
-                if (currentUserType === 'eleveur') {
-                    window.location.href = 'dashboard-eleveur.html';
+            const oldText = submitBtn.innerText;
+            submitBtn.innerText = "Création...";
+            submitBtn.disabled = true;
+
+            try {
+                const result = await window.DB.register(data);
+                
+                if (result.success) {
+                    // Simulation d'envoi d'email
+                    submitBtn.innerHTML = `<i data-lucide="mail-check" class="w-5 h-5 inline mr-2"></i> Envoi de l'email de bienvenue...`;
+                    lucide.createIcons();
+                    
+                    // Création d'un toast visuel
+                    const toast = document.createElement('div');
+                    toast.className = "fixed top-6 right-6 bg-gray-900 text-white px-6 py-4 rounded-xl shadow-2xl z-50 font-bold flex items-center gap-3 transform translate-x-full transition-transform duration-500 border border-gray-700";
+                    toast.innerHTML = `<i data-lucide="mail" class="w-6 h-6 text-brand-green"></i> <div><p class="text-sm font-bold">Email envoyé !</p><p class="text-xs text-gray-400 font-normal">Un email de bienvenue a été envoyé à ${email}</p></div>`;
+                    document.body.appendChild(toast);
+                    lucide.createIcons();
+                    
+                    // Animation d'entrée
+                    setTimeout(() => toast.classList.remove('translate-x-full'), 100);
+                    
+                    // Attente de 2.5 secondes avant la redirection
+                    setTimeout(() => {
+                        if (currentUserType === 'eleveur') {
+                            window.location.href = 'dashboard-eleveur.html?onboarding=true';
+                        } else {
+                            window.location.href = 'dashboard-user.html';
+                        }
+                    }, 2500);
                 } else {
-                    window.location.href = 'dashboard-user.html';
+                    alert(result.message);
+                    submitBtn.innerText = oldText;
+                    submitBtn.disabled = false;
                 }
-            } else {
-                alert(result.message);
+            } catch (error) {
+                console.error("Erreur lors de l'inscription:", error);
+                alert("Une erreur est survenue. Vérifiez que vous lancez bien le site via un serveur local (Live Server) et non en double-cliquant sur le fichier.");
+                submitBtn.innerText = oldText;
+                submitBtn.disabled = false;
             }
         });
     </script>

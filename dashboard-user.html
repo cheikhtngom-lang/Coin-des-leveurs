@@ -39,7 +39,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="db.js"></script>
     <script>
-        const user = requireAuth(['user', 'admin']);
+        window.currentUser = window.requireAuth(['user', 'admin']);
     </script>
 </head>
 <body class="font-sans bg-surface text-gray-800 antialiased h-screen flex overflow-hidden">
@@ -57,11 +57,26 @@
 
         <div class="flex-1 overflow-y-auto py-4 px-3 hide-scrollbar">
             <div class="space-y-1">
-                <a href="#" onclick="switchTab('favorites')" class="nav-link flex items-center gap-3 px-3 py-2.5 bg-brand-green/10 text-brand-green rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300" id="link-favorites">
+                <a href="#" onclick="switchTab('explorer')" class="nav-link flex items-center gap-3 px-3 py-2.5 bg-brand-green/10 text-brand-green rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300" id="link-explorer">
+                    <i data-lucide="compass" class="w-5 h-5"></i> Explorer
+                </a>
+                <a href="#" onclick="switchTab('live')" class="nav-link flex items-center justify-between px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300" id="link-live">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="video" class="w-5 h-5"></i> Foires en Direct
+                    </div>
+                    <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                </a>
+                <a href="#" onclick="switchTab('favorites')" class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300" id="link-favorites">
                     <i data-lucide="heart" class="w-5 h-5"></i> Mes Favoris
                 </a>
-                <a href="#" onclick="switchTab('searches')" class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300" id="link-searches">
-                    <i data-lucide="search" class="w-5 h-5"></i> Mes Recherches
+                <a href="#" onclick="switchTab('messages')" class="nav-link flex items-center justify-between px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300" id="link-messages">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="message-circle" class="w-5 h-5"></i> Messages
+                    </div>
+                    <span class="bg-brand-green text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">1</span>
+                </a>
+                <a href="#" onclick="switchTab('purchases')" class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300 mt-4" id="link-purchases">
+                    <i data-lucide="shopping-bag" class="w-5 h-5"></i> Mes Achats
                 </a>
                 <a href="#" onclick="switchTab('messages')" class="nav-link flex items-center justify-between px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300" id="link-messages">
                     <div class="flex items-center gap-3">
@@ -89,7 +104,7 @@
                     <a href="#" class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
                         <i data-lucide="life-buoy" class="w-5 h-5"></i> Support
                     </a>
-                    <a href="#" onclick="DB.logout(); window.location.href='index.html'" class="flex items-center gap-3 px-3 py-2.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300 mt-4">
+                    <a href="#" onclick="window.DB.logout().then(() => window.location.href='index.html')" class="flex items-center gap-3 px-3 py-2.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300 mt-4">
                         <i data-lucide="log-out" class="w-5 h-5"></i> Déconnexion
                     </a>
                 </div>
@@ -136,10 +151,52 @@
         </header>
 
         <!-- Scrollable Dashboard Content -->
-        <div class="flex-1 overflow-y-auto p-4 sm:p-6 relative">
+        <div class="flex-1 overflow-y-auto p-4 sm:p-6 relative" id="main-content-area">
             
+            <!-- View: Explorer -->
+            <div id="view-explorer" class="tab-view block max-w-7xl mx-auto">
+                
+                <!-- Hero Section for Discovery -->
+                <div class="bg-gradient-to-r from-brand-dark to-brand-green rounded-3xl p-8 mb-8 text-white relative overflow-hidden shadow-lg">
+                    <div class="absolute right-0 top-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
+                    <div class="relative z-10 max-w-lg">
+                        <h2 class="text-3xl font-extrabold mb-2">Trouvez l'animal parfait</h2>
+                        <p class="text-white/80 mb-6">Découvrez des milliers d'animaux provenant d'éleveurs certifiés à travers le pays.</p>
+                        <div class="flex gap-2">
+                            <button class="bg-white text-brand-green font-bold px-6 py-2.5 rounded-xl shadow-sm hover:scale-105 transition-transform">Explorer les Ovins</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div class="flex flex-wrap gap-3 mb-8 items-center">
+                    <button class="px-4 py-2 bg-gray-900 text-white rounded-full text-sm font-medium">Tout</button>
+                    <button class="px-4 py-2 bg-white border border-gray-200 text-gray-700 hover:border-gray-300 rounded-full text-sm font-medium transition-colors">Bovins</button>
+                    <button class="px-4 py-2 bg-white border border-gray-200 text-gray-700 hover:border-gray-300 rounded-full text-sm font-medium transition-colors">Ovins</button>
+                    <button class="px-4 py-2 bg-white border border-gray-200 text-gray-700 hover:border-gray-300 rounded-full text-sm font-medium transition-colors flex items-center gap-1"><i data-lucide="filter" class="w-4 h-4"></i> Plus de filtres</button>
+                </div>
+
+                <!-- Grid Explorer -->
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="explorer-grid">
+                    <div class="col-span-full text-center py-20 text-gray-500">Chargement des animaux...</div>
+                </div>
+            </div>
+
+            <!-- View: Live -->
+            <div id="view-live" class="tab-view hidden max-w-7xl mx-auto space-y-6">
+                <div class="bg-red-50 border border-red-100 rounded-3xl p-8 text-center flex flex-col items-center justify-center">
+                    <div class="w-20 h-20 bg-red-100 text-red-500 rounded-full flex items-center justify-center mb-4 relative">
+                        <i data-lucide="radio" class="w-10 h-10"></i>
+                        <span class="absolute top-0 right-0 w-4 h-4 bg-red-500 rounded-full animate-ping"></span>
+                    </div>
+                    <h2 class="text-3xl font-extrabold text-gray-900 mb-2">Foires en Direct</h2>
+                    <p class="text-gray-600 max-w-md">Vivez l'expérience des enchères et des foires virtuelles en direct. Achetez vos animaux au meilleur prix !</p>
+                    <button class="mt-6 bg-red-500 text-white font-bold px-8 py-3 rounded-full shadow-lg shadow-red-500/30 hover:scale-105 active:scale-95 transition-all">Rejoindre la Foire Tabaski</button>
+                </div>
+            </div>
+
             <!-- View: Favorites -->
-            <div id="view-favorites" class="tab-view block max-w-7xl mx-auto">
+            <div id="view-favorites" class="tab-view hidden max-w-7xl mx-auto">
                 
                 <!-- Filters -->
                 <div class="flex flex-wrap gap-3 mb-8">
@@ -154,7 +211,7 @@
                     
                     <!-- Card 1 -->
                     <div class="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 relative">
-                        <button class="absolute top-4 right-4 z-10 w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-red-500 shadow-sm hover:scale-110 transition-transform">
+                        <button onclick="toggleFavorite(this)" class="favorite-btn absolute top-4 right-4 z-10 w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-red-500 shadow-sm hover:scale-110 transition-transform">
                             <i data-lucide="heart" class="w-5 h-5 fill-current"></i>
                         </button>
                         <div class="relative h-56 overflow-hidden">
@@ -188,7 +245,7 @@
 
                     <!-- Card 2 -->
                     <div class="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 relative">
-                        <button class="absolute top-4 right-4 z-10 w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-red-500 shadow-sm hover:scale-110 transition-transform">
+                        <button onclick="toggleFavorite(this)" class="favorite-btn absolute top-4 right-4 z-10 w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-red-500 shadow-sm hover:scale-110 transition-transform">
                             <i data-lucide="heart" class="w-5 h-5 fill-current"></i>
                         </button>
                         <div class="relative h-56 overflow-hidden">
@@ -229,7 +286,7 @@
                             </div>
                         </div>
 
-                        <button class="absolute top-4 right-4 z-20 w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-red-500 shadow-sm hover:scale-110 transition-transform">
+                        <button onclick="toggleFavorite(this)" class="favorite-btn absolute top-4 right-4 z-20 w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-red-500 shadow-sm hover:scale-110 transition-transform">
                             <i data-lucide="heart" class="w-5 h-5 fill-current"></i>
                         </button>
                         <div class="relative h-56 overflow-hidden">
@@ -506,30 +563,68 @@
     <script>
         lucide.createIcons();
 
-        function switchTab(tabId) {
-            // Hide all tabs
+        // Attach global functions for inline onclick
+        window.switchTab = function(tabId) {
             document.querySelectorAll('.tab-view').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.tab-view').forEach(el => el.classList.remove('block'));
             
-            // Show selected view
             const selectedView = document.getElementById('view-' + tabId);
             if(selectedView) {
                 selectedView.classList.remove('hidden');
                 selectedView.classList.add('block');
-                if (tabId === 'vets') renderVets();
+                if (tabId === 'vets') window.renderVets && window.renderVets();
             }
 
-            // Update sidebar styles
             document.querySelectorAll('.nav-link').forEach(el => {
                 el.className = "nav-link flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300";
             });
             const activeLink = document.getElementById('link-' + tabId);
             if (activeLink) {
                 activeLink.className = "nav-link flex items-center gap-3 px-3 py-2.5 bg-brand-green/10 text-brand-green rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300";
+                
+                // Specific styling for the Live tab to keep the red dot layout
+                if (tabId === 'live') {
+                    activeLink.className = "nav-link flex items-center justify-between px-3 py-2.5 bg-brand-green/10 text-brand-green rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300";
+                }
             }
         }
-        // Settings Tabs Navigation Logic
-        function switchSettingsTab(targetId, btnElement) {
+        
+        window.toggleFavorite = function(btn) {
+            const icon = btn.querySelector('i');
+            if (btn.classList.contains('text-red-500')) {
+                btn.classList.remove('text-red-500');
+                btn.classList.add('text-gray-400');
+                icon.classList.remove('fill-current');
+            } else {
+                btn.classList.remove('text-gray-400');
+                btn.classList.add('text-red-500');
+                icon.classList.add('fill-current');
+                
+                // Pop animation
+                btn.classList.add('scale-125');
+                setTimeout(() => btn.classList.remove('scale-125'), 300);
+                
+                // Small toast notification
+                const toast = document.createElement('div');
+                toast.className = "fixed bottom-6 right-6 bg-gray-900 text-white px-4 py-3 rounded-xl shadow-2xl z-50 text-sm font-bold transition-all duration-500 transform translate-y-10 opacity-0 flex items-center gap-2";
+                toast.innerHTML = `<i data-lucide="heart" class="w-4 h-4 text-red-500 fill-current"></i> Ajouté aux favoris !`;
+                document.getElementById('main-content-area').appendChild(toast);
+                lucide.createIcons();
+                
+                setTimeout(() => {
+                    toast.classList.replace('translate-y-10', 'translate-y-0');
+                    toast.classList.replace('opacity-0', 'opacity-100');
+                }, 10);
+                
+                setTimeout(() => {
+                    toast.classList.replace('translate-y-0', 'translate-y-10');
+                    toast.classList.replace('opacity-100', 'opacity-0');
+                    setTimeout(() => toast.remove(), 500);
+                }, 2500);
+            }
+        }
+        
+        window.switchSettingsTab = function(targetId, btnElement) {
             document.querySelectorAll('.settings-content').forEach(content => {
                 content.classList.remove('block');
                 content.classList.add('hidden');
@@ -547,7 +642,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
-            const currentUser = DB.getCurrentUser();
+            const currentUser = window.DB.getCurrentUser();
             if (currentUser) {
                 const headerName = document.getElementById('header-user-name');
                 if(headerName) headerName.textContent = currentUser.name;
@@ -564,44 +659,95 @@
                 if(setName) setName.value = currentUser.name || '';
                 if(setEmail) setEmail.value = currentUser.email || '';
             }
-            switchTab('favorites');
+            window.switchTab('explorer');
+            if(window.renderUserAnimals) window.renderUserAnimals();
         });
 
-        function saveProfileSettings() {
-            if(!user) return;
-            const users = DB.get('users');
-            const idx = users.findIndex(u => u.id === user.id);
-            if (idx > -1) {
-                users[idx].name = document.getElementById('set-name').value;
-                DB.set('users', users);
-                localStorage.setItem('currentUser', JSON.stringify(users[idx]));
-                alert('Profil sauvegardé avec succès !');
-                window.location.reload();
+        window.renderUserAnimals = async function() {
+            const grid = document.getElementById('explorer-grid');
+            if(!grid) return;
+            
+            let animals = await window.DB.getAllAnimals();
+            const users = await window.DB.get('users');
+            
+            if(animals.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-20 text-gray-500">Aucun animal disponible pour le moment.</div>`;
+                return;
             }
+
+            // Mettre les animaux "à la une" (isFeatured) en premier
+            animals.sort((a, b) => (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0));
+
+            grid.innerHTML = animals.map(a => {
+                const owner = users.find(u => u.id === a.eleveurId) || { farmName: 'Éleveur inconnu' };
+                return `
+                    <div class="group bg-white rounded-3xl overflow-hidden border ${a.isFeatured ? 'border-gold ring-2 ring-gold/20' : 'border-gray-100'} shadow-sm hover:shadow-xl transition-all duration-300 relative flex flex-col justify-between">
+                        ${a.isFeatured ? `<div class="absolute top-0 left-1/2 -translate-x-1/2 bg-gold text-white text-[10px] font-bold px-3 py-0.5 rounded-b-lg z-20 shadow-sm flex items-center gap-1"><i data-lucide="star" class="w-3 h-3 fill-current"></i> À LA UNE</div>` : ''}
+                        
+                        <button onclick="toggleFavorite(this)" class="favorite-btn absolute top-4 right-4 z-10 w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-gray-400 shadow-sm hover:scale-110 transition-transform">
+                            <i data-lucide="heart" class="w-5 h-5"></i>
+                        </button>
+                        
+                        <div class="relative h-56 overflow-hidden bg-gray-50">
+                            <img src="${a.image || 'https://images.unsplash.com/photo-1511117833895-4b473c0b85d6?auto=format&fit=crop&w=800&q=80'}" alt="${a.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            <div class="absolute bottom-4 left-4 bg-brand-green text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
+                                ${Number(a.price).toLocaleString()} FCFA
+                            </div>
+                        </div>
+                        
+                        <div class="p-5 flex-1 flex flex-col">
+                            <div class="flex items-center gap-2 mb-2 text-xs">
+                                <span class="bg-brand-green/10 text-brand-green font-bold px-2 py-0.5 rounded uppercase tracking-wider">${a.category}</span>
+                                ${a.vaccines && a.vaccines.length > 0 ? `<span class="bg-blue-50 text-blue-600 px-2 py-0.5 rounded flex items-center gap-1"><i data-lucide="shield-check" class="w-3 h-3"></i> ${a.vaccines.length} Vaccin(s)</span>` : ''}
+                            </div>
+                            
+                            <h3 class="text-lg font-bold text-gray-900 mb-2 truncate" title="${a.title}">${a.title}</h3>
+                            
+                            <div class="flex items-center gap-2 text-sm text-gray-600 mb-4 truncate">
+                                <i data-lucide="map-pin" class="w-4 h-4 text-gray-400 shrink-0"></i>
+                                <span class="truncate">${owner.farmName || owner.name}, ${a.location}</span>
+                            </div>
+
+                            <div class="mt-auto flex gap-2">
+                                <button onclick="window.location.href='annonce.html?id=${a.id}'" class="flex-1 bg-gray-50 hover:bg-gray-100 text-gray-900 py-2.5 rounded-xl font-semibold transition-colors text-sm border border-gray-200">
+                                    Détails
+                                </button>
+                                <button class="flex-1 bg-brand-green hover:bg-brand-dark text-white py-2.5 rounded-xl font-semibold transition-colors text-sm flex items-center justify-center gap-2">
+                                    <i data-lucide="shopping-cart" class="w-4 h-4"></i> Acheter
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            lucide.createIcons();
+        };
+
+
+        window.saveProfileSettings = async function() {
+            if(!window.currentUser) return;
+            const newName = document.getElementById('set-name').value;
+            await window.DB.updateUser(window.currentUser.id, { name: newName });
+            alert('Profil sauvegardé avec succès !');
+            window.location.reload();
         }
 
-        function saveSecuritySettings() {
-            if(!user) return;
-            const users = DB.get('users');
-            const idx = users.findIndex(u => u.id === user.id);
-            if (idx > -1) {
-                const oldPwd = document.getElementById('set-old-pwd').value;
-                const newPwd = document.getElementById('set-new-pwd').value;
-                const email = document.getElementById('set-email').value;
-                
-                if (oldPwd && oldPwd !== users[idx].password) {
-                    alert('L\'ancien mot de passe est incorrect.');
-                    return;
-                }
-                
-                if (newPwd) users[idx].password = newPwd;
-                if (email) users[idx].email = email;
-                
-                DB.set('users', users);
-                localStorage.setItem('currentUser', JSON.stringify(users[idx]));
-                alert('Sécurité et identifiants sauvegardés avec succès !');
-                window.location.reload();
-            }
+        window.saveSecuritySettings = async function() {
+            if(!window.currentUser) return;
+            
+            const newPwd = document.getElementById('set-new-pwd').value;
+            const newEmail = document.getElementById('set-email').value;
+            
+            // Note: Firebase Auth prevents direct password updates without re-authentication usually,
+            // For this mockup, we'll just update the firestore user document.
+            let dataToUpdate = {};
+            if (newPwd) dataToUpdate.password = newPwd;
+            if (newEmail) dataToUpdate.email = newEmail;
+            
+            await window.DB.updateUser(window.currentUser.id, dataToUpdate);
+            alert('Sécurité et identifiants sauvegardés avec succès !');
+            window.location.reload();
         }
     </script>
 </body>

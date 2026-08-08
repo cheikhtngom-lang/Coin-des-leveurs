@@ -39,9 +39,11 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="db.js"></script>
     <script>
-        const user = requireAuth(['eleveur', 'admin']);
+        window.currentUser = window.requireAuth(['eleveur', 'admin']);
     </script>
 </head>
 <body class="font-sans bg-surface text-gray-800 antialiased h-screen flex overflow-hidden">
@@ -94,7 +96,7 @@
                     <a href="#" onclick="switchTab('settings')" class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300" id="link-settings">
                         <i data-lucide="settings" class="w-5 h-5"></i> Configuration
                     </a>
-                    <a href="#" onclick="DB.logout(); window.location.href='index.html'" class="flex items-center gap-3 px-3 py-2.5 text-red-500 hover:bg-red-50 hover:text-red-700 rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300 mt-2">
+                    <a href="#" onclick="window.DB.logout().then(() => window.location.href='index.html')" class="flex items-center gap-3 px-3 py-2.5 text-red-500 hover:bg-red-50 hover:text-red-700 rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300 mt-2">
                         <i data-lucide="log-out" class="w-5 h-5"></i> Déconnexion
                     </a>
                 </div>
@@ -248,7 +250,7 @@
                     <div class="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
                         <div class="flex justify-between items-center mb-6">
                             <h3 class="text-lg font-bold text-gray-900">Mes Annonces</h3>
-                            <button class="text-brand-green hover:text-brand-dark font-medium text-sm">Voir tout</button>
+                            <button onclick="switchTab('animals')" class="text-brand-green hover:text-brand-dark font-medium text-sm">Voir tout</button>
                         </div>
                         
                         <div class="space-y-4 max-h-[300px] overflow-y-auto pr-2" id="animal-list">
@@ -444,29 +446,105 @@
         </div>
     </div>
 
+    <!-- Onboarding Modal -->
+    <div id="onboardingModal" class="fixed inset-0 bg-gray-900/80 backdrop-blur-md z-[100] hidden flex items-center justify-center px-4">
+        <div class="bg-white w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl relative">
+            <div class="absolute top-0 right-0 p-6 opacity-10 pointer-events-none">
+                <i data-lucide="award" class="w-32 h-32 text-brand-green"></i>
+            </div>
+            <div class="p-8 text-center relative z-10">
+                <div class="w-20 h-20 bg-brand-green/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <i data-lucide="party-popper" class="w-10 h-10 text-brand-green"></i>
+                </div>
+                <h2 class="text-3xl font-extrabold text-gray-900 mb-2">Bienvenue <span id="onboarding-name">Éleveur</span> !</h2>
+                <p class="text-gray-600 mb-8">Votre compte pro est créé. Pour commencer à vendre et être visible par les acheteurs, quelle est la star de votre élevage aujourd'hui ?</p>
+                
+                <button onclick="startFirstAnimal()" class="w-full bg-brand-green hover:bg-brand-dark text-white py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all shadow-lg hover:shadow-xl hover:-translate-y-1">
+                    <i data-lucide="plus-circle" class="w-6 h-6"></i>
+                    Ajouter mon premier animal
+                </button>
+                <button onclick="closeOnboardingModal()" class="w-full mt-4 py-2 text-sm text-gray-500 hover:text-gray-900 font-medium transition-colors">
+                    Passer cette étape (non recommandé)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Boost Modal -->
+    <div id="boostModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center px-4">
+        <div class="bg-white w-full max-w-md rounded-3xl overflow-hidden shadow-2xl">
+            <div class="flex justify-between items-center p-6 border-b border-gray-100 bg-gold/10">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="star" class="w-6 h-6 text-gold fill-gold"></i>
+                    <h3 class="text-xl font-bold text-gray-900">Mettre à la une</h3>
+                </div>
+                <button onclick="closeBoostModal()" class="text-gray-400 hover:text-gray-700 transition-colors">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <p class="text-sm text-gray-600 mb-6 text-center">Augmentez la visibilité de votre annonce ! Choisissez une durée :</p>
+                
+                <div class="space-y-3 mb-6">
+                    <label class="flex items-center justify-between p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-gold transition-colors has-[:checked]:border-gold has-[:checked]:bg-gold/5">
+                        <div class="flex items-center gap-3">
+                            <input type="radio" name="boost_duration" value="1_day" class="text-gold focus:ring-gold" checked>
+                            <span class="font-bold text-gray-900">1 Jour</span>
+                        </div>
+                        <span class="font-bold text-brand-green">500 FCFA</span>
+                    </label>
+                    <label class="flex items-center justify-between p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-gold transition-colors has-[:checked]:border-gold has-[:checked]:bg-gold/5">
+                        <div class="flex items-center gap-3">
+                            <input type="radio" name="boost_duration" value="1_week" class="text-gold focus:ring-gold">
+                            <span class="font-bold text-gray-900">1 Semaine</span>
+                        </div>
+                        <span class="font-bold text-brand-green">2 500 FCFA</span>
+                    </label>
+                    <label class="flex items-center justify-between p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-gold transition-colors has-[:checked]:border-gold has-[:checked]:bg-gold/5">
+                        <div class="flex items-center gap-3">
+                            <input type="radio" name="boost_duration" value="1_month" class="text-gold focus:ring-gold">
+                            <span class="font-bold text-gray-900">1 Mois</span>
+                        </div>
+                        <span class="font-bold text-brand-green">8 000 FCFA</span>
+                    </label>
+                </div>
+                
+                <div class="flex gap-2">
+                    <button onclick="processBoostPayment('wave')" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg">
+                        Payer Wave
+                    </button>
+                    <button onclick="processBoostPayment('om')" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-md hover:shadow-lg">
+                        Payer OM
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Add Animal Modal -->
-    <div id="addAnimalModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center px-4">
-        <div class="bg-white w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl">
-            <div class="flex justify-between items-center p-6 border-b border-gray-100">
+    <div id="addAnimalModal" class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center px-4 py-6">
+        <div class="bg-white w-full max-w-2xl rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-full">
+            <div class="flex justify-between items-center p-6 border-b border-gray-100 shrink-0">
                 <h3 class="text-xl font-bold text-gray-900">Ajouter un animal</h3>
                 <button onclick="closeAddAnimalModal()" class="text-gray-400 hover:text-gray-700 transition-colors">
                     <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
-            <div class="p-6">
+            <div class="p-6 overflow-y-auto">
                 <form id="addAnimalForm" class="space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="col-span-2">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="sm:col-span-2">
                             <label class="block text-sm font-bold text-gray-700 mb-1">Titre de l'annonce</label>
                             <input type="text" id="animal-title" required class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-brand-green focus:border-brand-green">
                         </div>
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-1">Catégorie</label>
-                            <select id="animal-category" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-brand-green focus:border-brand-green">
+                            <select id="animal-category" onchange="updateVaccineChecklist()" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-brand-green focus:border-brand-green">
                                 <option value="Ovin">Ovin (Mouton)</option>
                                 <option value="Bovin">Bovin (Vache, Taureau)</option>
                                 <option value="Cheval">Cheval</option>
                                 <option value="Caprin">Caprin (Chèvre)</option>
+                                <option value="Volaille">Volaille (Poulet, Pintade)</option>
                             </select>
                         </div>
                         <div>
@@ -481,9 +559,27 @@
                             <label class="block text-sm font-bold text-gray-700 mb-1">Poids (kg)</label>
                             <input type="number" id="animal-weight" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-brand-green focus:border-brand-green">
                         </div>
-                        <div class="col-span-2">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Âge (ex: 6 mois)</label>
+                            <input type="text" id="animal-age" class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-brand-green focus:border-brand-green">
+                        </div>
+                        <div>
                             <label class="block text-sm font-bold text-gray-700 mb-1">Localisation</label>
                             <input type="text" id="animal-location" required class="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-brand-green focus:border-brand-green">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Photo de couverture (1 max)</label>
+                            <input type="file" id="animal-cover-photo" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:font-bold file:bg-brand-green/10 file:text-brand-green hover:file:bg-brand-green/20 border border-gray-300 rounded-xl p-1.5 cursor-pointer transition-colors focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Autres photos (5 max)</label>
+                            <input type="file" id="animal-gallery-photos" accept="image/*" multiple class="w-full text-sm text-gray-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:font-bold file:bg-brand-green/10 file:text-brand-green hover:file:bg-brand-green/20 border border-gray-300 rounded-xl p-1.5 cursor-pointer transition-colors focus:outline-none">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Carnet de vaccination (Cochez les vaccins reçus)</label>
+                            <div id="vaccine-checklist-container" class="grid grid-cols-2 md:grid-cols-3 gap-2 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                                <!-- Checkboxes injectées dynamiquement -->
+                            </div>
                         </div>
                     </div>
                     <div class="pt-4 flex justify-end gap-3">
@@ -622,13 +718,57 @@
         // Call initAnalyticsCharts once the DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
-            const currentUser = DB.getCurrentUser();
+            const currentUser = window.DB.getCurrentUser();
+
+            // Vérification de l'Onboarding
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('onboarding') === 'true') {
+                document.getElementById('onboardingModal').classList.remove('hidden');
+                if (currentUser) {
+                    document.getElementById('onboarding-name').innerText = currentUser.name.split(' ')[0];
+                }
+                
+                // Lancer les confettis
+                var duration = 3 * 1000;
+                var animationEnd = Date.now() + duration;
+                var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 110 };
+
+                function randomInRange(min, max) {
+                  return Math.random() * (max - min) + min;
+                }
+
+                var interval = setInterval(function() {
+                  var timeLeft = animationEnd - Date.now();
+                  if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                  }
+                  var particleCount = 50 * (timeLeft / duration);
+                  confetti(Object.assign({}, defaults, { particleCount,
+                    origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+                  }));
+                  confetti(Object.assign({}, defaults, { particleCount,
+                    origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+                  }));
+                }, 250);
+            }
             if (currentUser) {
-                document.getElementById('header-farm-name').textContent = currentUser.farmName || currentUser.name;
+                const farmName = currentUser.farmName || currentUser.name;
+                document.getElementById('header-farm-name').textContent = farmName;
+                document.getElementById('welcome-message').innerText = `Bonjour, ${farmName} ! 👋`;
+                
+                const headerAvatar = document.getElementById('header-avatar');
+                if(headerAvatar) headerAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(farmName)}&background=1E8E3E&color=fff`;
             }
             // Ensure first tab is correctly initialized
-            switchTab('dashboard');
+            window.switchTab('dashboard');
             initAnalyticsCharts();
+            window.renderAnimals();
+
+            // Onboarding Check
+            const urlParams = new URLSearchParams(window.location.search);
+            if(urlParams.get('onboarding') === 'true') {
+                setTimeout(() => window.openAddAnimalModal(), 600);
+            }
         });
 
         const config = {
@@ -672,79 +812,219 @@
 
         new Chart(ctx, config);
 
-        // --- DYNAMIC LOGIC ---
-        document.addEventListener('DOMContentLoaded', () => {
-            if(user) {
-                document.getElementById('welcome-message').innerText = `Bonjour, ${user.farmName || user.name} ! 👋`;
-            }
-            renderAnimals();
-        });
-
-        function renderAnimals() {
+        window.renderAnimals = async function() {
             const list = document.getElementById('animal-list');
             const fullList = document.getElementById('full-animal-list');
-            const animals = DB.getEleveurAnimals(user.id);
+            if(!window.currentUser) return;
+            
+            const animals = await window.DB.getEleveurAnimals(window.currentUser.id);
             
             if (animals.length === 0) {
-                list.innerHTML = `<p class="text-sm text-gray-500 text-center py-4">Aucune annonce pour le moment.</p>`;
-                if(fullList) fullList.innerHTML = `<p class="text-sm text-gray-500 col-span-3 text-center py-4">Vous n'avez pas encore d'animaux.</p>`;
+                const emptyCta = `
+                    <div class="flex flex-col items-center justify-center p-8 text-center border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 my-4 shadow-inner">
+                        <div class="w-16 h-16 bg-brand-green/10 text-brand-green rounded-full flex items-center justify-center mb-4 shadow-sm">
+                            <i data-lucide="camera" class="w-8 h-8"></i>
+                        </div>
+                        <h4 class="text-lg font-bold text-gray-900 mb-2">Prêt à vendre ?</h4>
+                        <p class="text-sm text-gray-500 mb-6 max-w-sm">C'est ici que tout commence. Ajoutez votre premier animal avec de belles photos pour attirer les acheteurs.</p>
+                        <button onclick="window.openAddAnimalModal()" class="px-6 py-3 bg-brand-green hover:bg-brand-dark text-white font-bold rounded-xl shadow-lg shadow-brand-green/30 hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
+                            <i data-lucide="plus" class="w-5 h-5"></i> Publier mon premier animal
+                        </button>
+                    </div>
+                `;
+                if(list) list.innerHTML = emptyCta;
+                if(fullList) fullList.innerHTML = `<div class="col-span-1 md:col-span-2 lg:col-span-3">${emptyCta}</div>`;
+                lucide.createIcons();
                 return;
             }
 
             const htmlContentSmall = animals.map(a => `
-                <div class="flex items-center gap-4 bg-gray-50 p-2 rounded-xl">
+                <div class="flex items-center gap-4 bg-gray-50 p-2 rounded-xl relative transition-all ${a.isFeatured ? 'ring-2 ring-gold bg-gold/5' : ''}">
                     <img src="${a.image || 'https://images.unsplash.com/photo-1511117833895-4b473c0b85d6?auto=format&fit=crop&w=150&q=80'}" alt="${a.title}" class="w-16 h-16 rounded-xl object-cover shadow-sm">
-                    <div class="flex-1">
-                        <h4 class="text-sm font-bold text-gray-900 truncate" title="${a.title}">${a.title}</h4>
+                    <div class="flex-1 overflow-hidden">
+                        <h4 class="text-sm font-bold text-gray-900 truncate flex items-center gap-1" title="${a.title}">
+                            ${a.isFeatured ? '<i data-lucide="star" class="w-4 h-4 text-gold fill-gold shrink-0"></i>' : ''}
+                            ${a.title}
+                        </h4>
                         <p class="text-xs text-brand-green font-bold">${Number(a.price).toLocaleString()} FCFA</p>
+                        <div class="flex items-center gap-2 mt-1">
+                            ${a.age ? `<span class="text-[10px] bg-gray-200 text-gray-700 px-2 py-0.5 rounded">${a.age}</span>` : ''}
+                            ${a.vaccines && a.vaccines.length > 0 ? `
+                            <div class="relative inline-block group">
+                                <span class="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded flex items-center gap-1 border border-blue-100 cursor-help"><i data-lucide="shield-check" class="w-3 h-3"></i> ${a.vaccines.length} Vaccin(s)</span>
+                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-48 p-2 bg-gray-900 text-white text-[10px] rounded-lg shadow-xl z-20">
+                                    <p class="font-bold mb-1 border-b border-gray-700 pb-1">Vaccins reçus :</p>
+                                    <ul class="list-disc pl-3 space-y-1">
+                                        ${a.vaccines.map(v => `<li>${v}</li>`).join('')}
+                                    </ul>
+                                    <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
                     </div>
                     <div class="text-right flex flex-col items-end">
                         <span class="text-xs px-2 py-1 rounded-full ${a.status === 'vendu' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}">${a.status}</span>
-                        <button onclick="deleteAnimal('${a.id}')" class="text-xs text-red-500 hover:text-red-700 mt-2">Supprimer</button>
+                        <div class="flex items-center gap-2 mt-2">
+                            ${!a.isFeatured ? `<button onclick="window.openBoostModal('${a.id}')" class="text-xs font-bold text-gold bg-gold/10 px-2 py-1 rounded-lg hover:bg-gold/20 flex items-center gap-1 transition-colors"><i data-lucide="star" class="w-3 h-3 fill-gold"></i> À la une</button>` : ''}
+                            <button onclick="window.deleteAnimal('${a.id}')" class="text-xs text-red-500 hover:text-red-700 transition-colors bg-red-50 hover:bg-red-100 p-1 rounded-lg"><i data-lucide="trash" class="w-3 h-3"></i></button>
+                        </div>
                     </div>
                 </div>
             `).join('');
 
-            list.innerHTML = htmlContentSmall;
+            if(list) list.innerHTML = htmlContentSmall;
             if(fullList) fullList.innerHTML = htmlContentSmall;
         }
 
-        function openAddAnimalModal() {
+        window.openAddAnimalModal = function() {
             document.getElementById('addAnimalModal').classList.remove('hidden');
+            if(window.updateVaccineChecklist) window.updateVaccineChecklist();
         }
 
-        function closeAddAnimalModal() {
+        window.closeAddAnimalModal = function() {
             document.getElementById('addAnimalModal').classList.add('hidden');
             document.getElementById('addAnimalForm').reset();
         }
 
-        document.getElementById('addAnimalForm').addEventListener('submit', (e) => {
+        const processImageFile = (file) => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const MAX_SIZE = 800; // Resize to max 800px to save localStorage space
+                    
+                    if (width > height && width > MAX_SIZE) {
+                        height *= MAX_SIZE / width;
+                        width = MAX_SIZE;
+                    } else if (height > MAX_SIZE) {
+                        width *= MAX_SIZE / height;
+                        height = MAX_SIZE;
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    // Convert to compressed JPEG base64
+                    resolve(canvas.toDataURL('image/jpeg', 0.7));
+                };
+                img.onerror = reject;
+                img.src = e.target.result;
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+
+        document.getElementById('addAnimalForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            if(!window.currentUser) return;
+            
+            const coverInput = document.getElementById('animal-cover-photo');
+            const galleryInput = document.getElementById('animal-gallery-photos');
+            
+            // Récupérer les vaccins cochés
+            const checkedVaccines = Array.from(document.querySelectorAll('input[name="animal_vaccines"]:checked')).map(cb => cb.value);
+            
+            let imageUrl = 'https://images.unsplash.com/photo-1511117833895-4b473c0b85d6?auto=format&fit=crop&w=800&q=80'; // default placeholder
+            if (coverInput && coverInput.files && coverInput.files.length > 0) {
+                try {
+                    imageUrl = await processImageFile(coverInput.files[0]);
+                } catch(err) {
+                    console.error("Erreur de compression d'image", err);
+                }
+            }
+            
+            let galleryUrls = [];
+            if (galleryInput && galleryInput.files && galleryInput.files.length > 0) {
+                const files = Array.from(galleryInput.files).slice(0, 5); // Limiter à 5 photos max
+                for (const file of files) {
+                    try {
+                        const base64 = await processImageFile(file);
+                        galleryUrls.push(base64);
+                    } catch(err) {}
+                }
+            }
+
             const data = {
-                eleveurId: user.id,
+                eleveurId: window.currentUser.id,
                 title: document.getElementById('animal-title').value,
                 category: document.getElementById('animal-category').value,
                 race: document.getElementById('animal-race').value,
                 price: document.getElementById('animal-price').value,
                 weight: document.getElementById('animal-weight').value,
+                age: document.getElementById('animal-age').value,
                 location: document.getElementById('animal-location').value,
                 status: 'disponible',
-                image: 'https://images.unsplash.com/photo-1511117833895-4b473c0b85d6?auto=format&fit=crop&w=800&q=80' // default placeholder
+                image: imageUrl,
+                gallery: galleryUrls,
+                vaccines: checkedVaccines
             };
-            DB.addAnimal(data);
-            closeAddAnimalModal();
-            renderAnimals(); // refresh list
+            await window.DB.addAnimal(data);
+            window.closeAddAnimalModal();
+            window.renderAnimals(); // refresh list
+            
+            // Micro-victoire : Confettis
+            confetti({
+                particleCount: 150,
+                spread: 80,
+                origin: { y: 0.6 },
+                colors: ['#1E8E3E', '#FBBF24', '#ffffff'],
+                disableForReducedMotion: true
+            });
+            
+            // Supprimer le paramètre URL pour éviter l'ouverture au refresh
+            const url = new URL(window.location);
+            url.searchParams.delete('onboarding');
+            window.history.replaceState({}, '', url);
         });
 
-        function deleteAnimal(id) {
+        window.deleteAnimal = async function(id) {
             if(confirm('Êtes-vous sûr de vouloir supprimer cette annonce ?')) {
-                DB.deleteAnimal(id);
-                renderAnimals();
+                await window.DB.deleteAnimal(id);
+                window.renderAnimals();
             }
         }
 
+        let currentBoostAnimalId = null;
+        
+        window.openBoostModal = function(animalId) {
+            currentBoostAnimalId = animalId;
+            document.getElementById('boostModal').classList.remove('hidden');
+        }
+        
+        window.closeBoostModal = function() {
+            document.getElementById('boostModal').classList.add('hidden');
+            currentBoostAnimalId = null;
+        }
+        
+        window.processBoostPayment = async function(method) {
+            if(!currentBoostAnimalId) return;
+            
+            // Simulation de paiement
+            alert(`Simulation de paiement via ${method === 'wave' ? 'Wave' : 'Orange Money'} traitée avec succès !`);
+            
+            // Mise à jour de l'animal
+            await window.DB.updateAnimal(currentBoostAnimalId, { isFeatured: true });
+            
+            window.closeBoostModal();
+            window.renderAnimals();
+            
+            // Micro-victoire pour l'achat du boost
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#FBBF24', '#ffffff', '#F59E0B'],
+                disableForReducedMotion: true
+            });
+        }
+
         // Single Page Navigation Logic
-        function switchTab(tabId) {
+        window.switchTab = function(tabId, event) {
             // Hide all views
             document.querySelectorAll('.tab-view').forEach(view => {
                 view.classList.add('hidden');
@@ -754,24 +1034,28 @@
             if(selectedView) {
                 selectedView.classList.remove('hidden');
                 selectedView.classList.add('block');
-                if (tabId === 'vets') renderVets();
-            }// Update active state on nav links
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.classList.remove('bg-brand-green/10', 'text-brand-green', 'font-bold');
-                link.classList.add('text-gray-600', 'font-medium', 'hover:bg-gray-50');
-            });
-            event.currentTarget.classList.remove('text-gray-600', 'font-medium', 'hover:bg-gray-50');
-            event.currentTarget.classList.add('bg-brand-green/10', 'text-brand-green', 'font-bold');
+                if (tabId === 'vets') window.renderVets && window.renderVets();
+            }
+            
+            // Update active state on nav links if event is provided
+            if (event) {
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('bg-brand-green/10', 'text-brand-green', 'font-bold');
+                    link.classList.add('text-gray-600', 'font-medium', 'hover:bg-gray-50');
+                });
+                event.currentTarget.classList.remove('text-gray-600', 'font-medium', 'hover:bg-gray-50');
+                event.currentTarget.classList.add('bg-brand-green/10', 'text-brand-green', 'font-bold');
+            }
             
             // Close mobile menu if open
             const sidebar = document.getElementById('sidebar');
-            if(window.innerWidth < 1024) {
+            if(sidebar && window.innerWidth < 1024) {
                 sidebar.classList.add('-translate-x-full');
             }
         }
 
         // Settings Tabs Navigation Logic
-        function switchSettingsTab(targetId, btnElement) {
+        window.switchSettingsTab = function(targetId, btnElement) {
             // Hide all settings content
             document.querySelectorAll('.settings-content').forEach(content => {
                 content.classList.remove('block');
@@ -779,8 +1063,11 @@
             });
             
             // Show target
-            document.getElementById(targetId).classList.remove('hidden');
-            document.getElementById(targetId).classList.add('block');
+            const targetEl = document.getElementById(targetId);
+            if(targetEl) {
+                targetEl.classList.remove('hidden');
+                targetEl.classList.add('block');
+            }
             
             // Reset buttons
             document.querySelectorAll('.settings-tab-btn').forEach(btn => {
@@ -789,66 +1076,79 @@
             });
             
             // Activate clicked button
-            btnElement.classList.remove('text-gray-600', 'hover:bg-gray-200');
-            btnElement.classList.add('bg-brand-green/10', 'text-brand-green');
+            if(btnElement) {
+                btnElement.classList.remove('text-gray-600', 'hover:bg-gray-200');
+                btnElement.classList.add('bg-brand-green/10', 'text-brand-green');
+            }
         }
 
-        // Populate UI from currentUser
-        if (currentUser) {
-            document.getElementById('header-user-name').innerText = currentUser.name;
-            const farmName = currentUser.farmName || 'Ferme';
-            document.getElementById('header-avatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(farmName)}&background=1E8E3E&color=fff`;
+        window.saveProfileSettings = async function() {
+            if(!window.currentUser) return;
+            const newName = document.getElementById('set-name') ? document.getElementById('set-name').value : window.currentUser.name;
+            const newFarm = document.getElementById('set-farm') ? document.getElementById('set-farm').value : window.currentUser.farmName;
             
-            const settingsAvatar = document.getElementById('settings-avatar');
-            if(settingsAvatar) settingsAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(farmName)}&background=1E8E3E&color=fff`;
-
-            // Pre-fill settings form
-            if (document.getElementById('set-name')) {
-                document.getElementById('set-name').value = currentUser.name;
-                document.getElementById('set-farm').value = currentUser.farmName || '';
-                document.getElementById('set-email').value = currentUser.email;
-            }
+            await window.DB.updateUser(window.currentUser.id, { name: newName, farmName: newFarm });
+            alert('Profil sauvegardé avec succès !');
+            window.location.reload();
         }
 
-        function saveProfileSettings() {
-            if(!currentUser) return;
-            const users = DB.get('users');
-            const idx = users.findIndex(u => u.id === currentUser.id);
-            if (idx > -1) {
-                users[idx].name = document.getElementById('set-name').value;
-                users[idx].farmName = document.getElementById('set-farm').value;
-                // email remains unchanged here, or we can handle it if we want
-                DB.set('users', users);
-                localStorage.setItem('currentUser', JSON.stringify(users[idx]));
-                alert('Profil sauvegardé avec succès !');
-                window.location.reload();
+        // Configuration dynamique des vaccins
+        const VACCINES_BY_CATEGORY = {
+            'Ovin': ['PPR', 'Pasteurellose', 'Clavelée', 'Fièvre de la Vallée du Rift'],
+            'Caprin': ['PPR', 'Pasteurellose', 'Fièvre de la Vallée du Rift'],
+            'Bovin': ['PPCB (Péripneumonie)', 'Pasteurellose', 'Charbon symptomatique', 'Dermatose Nodulaire', 'Fièvre aphteuse'],
+            'Cheval': ['Tétanos', 'Grippe équine', 'Rage', 'Peste équine'],
+            'Volaille': ['Maladie de Newcastle', 'Gumboro', 'Variole aviaire', 'Bronchite infectieuse']
+        };
+
+        window.updateVaccineChecklist = function() {
+            const categorySelect = document.getElementById('animal-category');
+            if(!categorySelect) return;
+            const category = categorySelect.value;
+            const container = document.getElementById('vaccine-checklist-container');
+            if(!container) return;
+            
+            const vaccines = VACCINES_BY_CATEGORY[category] || [];
+            
+            if(vaccines.length === 0) {
+                container.innerHTML = '<p class="text-sm text-gray-500 col-span-full">Aucun vaccin standard défini pour cette catégorie.</p>';
+                return;
             }
+            
+            container.innerHTML = vaccines.map((vac) => `
+                <label class="flex items-center gap-2 p-2 rounded-lg bg-white shadow-sm hover:bg-gray-50 transition-colors cursor-pointer border border-gray-100">
+                    <input type="checkbox" name="animal_vaccines" value="${vac}" class="w-4 h-4 text-brand-green border-gray-300 rounded focus:ring-brand-green">
+                    <span class="text-xs font-medium text-gray-700 leading-tight">${vac}</span>
+                </label>
+            `).join('');
+        };
+
+        window.saveSecuritySettings = async function() {
+            if(!window.currentUser) return;
+            
+            const newPwd = document.getElementById('set-new-pwd') ? document.getElementById('set-new-pwd').value : null;
+            const newEmail = document.getElementById('set-email') ? document.getElementById('set-email').value : null;
+            
+            let dataToUpdate = {};
+            if (newPwd) dataToUpdate.password = newPwd;
+            if (newEmail) dataToUpdate.email = newEmail;
+            
+            await window.DB.updateUser(window.currentUser.id, dataToUpdate);
+            alert('Sécurité et identifiants sauvegardés avec succès !');
+            window.location.reload();
         }
 
-        function saveSecuritySettings() {
-            if(!currentUser) return;
-            const users = DB.get('users');
-            const idx = users.findIndex(u => u.id === currentUser.id);
-            if (idx > -1) {
-                const oldPwd = document.getElementById('set-old-pwd').value;
-                const newPwd = document.getElementById('set-new-pwd').value;
-                const email = document.getElementById('set-email').value;
-                
-                if (oldPwd && oldPwd !== users[idx].password) {
-                    alert('L\'ancien mot de passe est incorrect.');
-                    return;
-                }
-                
-                if (newPwd) users[idx].password = newPwd;
-                if (email) users[idx].email = email;
-                
-                DB.set('users', users);
-                localStorage.setItem('currentUser', JSON.stringify(users[idx]));
-                alert('Sécurité et identifiants sauvegardés avec succès !');
-                window.location.reload();
-            }
+        function closeOnboardingModal() {
+            document.getElementById('onboardingModal').classList.add('hidden');
+            // Retirer le paramètre onboarding de l'URL pour éviter qu'il ne se rouvre au rafraîchissement
+            const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+            window.history.replaceState({path:newUrl}, '', newUrl);
         }
 
+        function startFirstAnimal() {
+            closeOnboardingModal();
+            openAddAnimalModal();
+        }
     </script>
 </body>
 </html>

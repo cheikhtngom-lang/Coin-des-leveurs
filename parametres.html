@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paramètres - Coin des Éleveurs</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            green: '#1E8E3E',
+                            light: '#4ade80',
+                            dark: '#14532d',
+                        },
+                        gold: '#FBBF24',
+                        surface: '#f8fafc',
+                    },
+                    boxShadow: {
+                        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        .glass {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Custom Toggle Switch */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #1E8E3E;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #1E8E3E;
+        }
+    </style>
+</head>
+<body class="font-sans bg-surface text-gray-800 antialiased h-screen flex flex-col">
+
+    <!-- Navigation -->
+    <nav class="w-full z-50 glass border-b border-gray-200 sticky top-0">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <a href="index.html" class="flex items-center gap-2 cursor-pointer group">
+                    <div class="w-10 h-10 rounded-xl bg-brand-green flex items-center justify-center shadow-lg shadow-brand-green/30 group-hover:scale-105 transition-transform">
+                        <i data-lucide="leaf" class="text-white w-6 h-6"></i>
+                    </div>
+                    <span class="font-bold text-2xl tracking-tight text-gray-900">Coin des <span class="text-brand-green">Éleveurs</span></span>
+                </a>
+                
+                <div class="flex items-center space-x-4">
+                    <div class="hidden md:flex items-center gap-3 mr-4">
+                        <div class="text-right">
+                            <p class="text-sm font-bold text-gray-900">Élevage Diallo</p>
+                            <p class="text-xs text-brand-green font-medium">Compte Pro</p>
+                        </div>
+                        <img src="https://ui-avatars.com/api/?name=Elevage+Diallo&background=1E8E3E&color=fff&rounded=true" alt="Avatar" class="w-10 h-10 rounded-full border-2 border-white shadow-sm">
+                    </div>
+                    <a href="dashboard-eleveur.html" class="bg-white border border-gray-200 text-gray-600 hover:text-brand-green hover:border-brand-green/30 px-4 py-2 rounded-xl font-medium transition-all shadow-sm flex items-center gap-2">
+                        <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">Tableau de bord</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        
+        <div class="mb-8">
+            <h1 class="text-3xl font-extrabold text-gray-900">Paramètres du compte</h1>
+            <p class="text-gray-500 mt-1">Gérez vos informations personnelles, vos préférences et votre abonnement.</p>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-8">
+            
+            <!-- Sidebar Navigation -->
+            <aside class="w-full md:w-64 shrink-0">
+                <nav class="space-y-1" id="settings-nav">
+                    <!-- Les onglets -->
+                    <button onclick="switchTab('profil')" data-target="profil" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all text-brand-green bg-brand-green/10">
+                        <i data-lucide="user" class="w-5 h-5"></i>
+                        Mon Profil
+                    </button>
+                    <button onclick="switchTab('notifications')" data-target="notifications" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all text-gray-600 hover:bg-gray-100 hover:text-gray-900">
+                        <i data-lucide="bell" class="w-5 h-5"></i>
+                        Notifications
+                    </button>
+                    <button onclick="switchTab('preferences')" data-target="preferences" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all text-gray-600 hover:bg-gray-100 hover:text-gray-900">
+                        <i data-lucide="settings" class="w-5 h-5"></i>
+                        Préférences
+                    </button>
+                    <button onclick="switchTab('securite')" data-target="securite" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all text-gray-600 hover:bg-gray-100 hover:text-gray-900">
+                        <i data-lucide="shield" class="w-5 h-5"></i>
+                        Sécurité
+                    </button>
+                    <button onclick="switchTab('abonnement')" data-target="abonnement" class="tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all text-gray-600 hover:bg-gray-100 hover:text-gray-900">
+                        <i data-lucide="credit-card" class="w-5 h-5"></i>
+                        Abonnement
+                    </button>
+                </nav>
+            </aside>
+
+            <!-- Settings Sections -->
+            <div class="flex-1 bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-8 min-h-[500px]">
+                
+                <!-- 1. Profil -->
+                <section id="profil" class="tab-content active">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4">Informations Publiques</h2>
+                    
+                    <div class="flex items-center gap-6 mb-8">
+                        <div class="relative group cursor-pointer">
+                            <img src="https://ui-avatars.com/api/?name=Elevage+Diallo&background=1E8E3E&color=fff&size=128" alt="Avatar" class="w-24 h-24 rounded-2xl object-cover shadow-md group-hover:opacity-75 transition-opacity">
+                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <i data-lucide="camera" class="w-8 h-8 text-white drop-shadow-md"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-gray-900 text-lg">Logo de l'exploitation</h3>
+                            <p class="text-sm text-gray-500 mb-3">Format JPG, GIF ou PNG. 5MB max.</p>
+                            <div class="flex gap-3">
+                                <button class="bg-brand-green text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-brand-dark transition-colors shadow-sm">Changer</button>
+                                <button class="bg-gray-100 text-gray-700 px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors">Supprimer</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <form class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Nom de l'exploitation</label>
+                                <input type="text" value="Élevage Diallo" class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-brand-green focus:border-brand-green block p-3 transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Nom du responsable</label>
+                                <input type="text" value="Amadou Diallo" class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-brand-green focus:border-brand-green block p-3 transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Numéro de téléphone public</label>
+                                <input type="tel" value="+221 77 123 45 67" class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-brand-green focus:border-brand-green block p-3 transition-colors">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Adresse E-mail publique</label>
+                                <input type="email" value="contact@elevage-diallo.sn" class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-brand-green focus:border-brand-green block p-3 transition-colors">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Localisation de la ferme</label>
+                                <input type="text" value="Touba, Région de Diourbel" class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-brand-green focus:border-brand-green block p-3 transition-colors">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Description (Bio)</label>
+                                <textarea rows="4" class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-brand-green focus:border-brand-green block p-3 transition-colors resize-none">Spécialisé dans l'élevage de moutons Ladoum de pure race depuis plus de 10 ans. Nos bêtes sont élevées dans les meilleures conditions.</textarea>
+                                <p class="text-xs text-gray-500 mt-2">Cette description apparaîtra sur votre profil public d'éleveur.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="pt-4 flex justify-end">
+                            <button type="button" class="bg-brand-green text-white px-6 py-3 rounded-xl font-bold shadow-lg shadow-brand-green/30 hover:-translate-y-0.5 hover:shadow-xl transition-all">
+                                Enregistrer les modifications
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- 2. Notifications -->
+                <section id="notifications" class="tab-content">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4">Préférences de Notification</h2>
+                    
+                    <div class="space-y-6">
+                        <!-- Alert Item -->
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                            <div>
+                                <h4 class="font-bold text-gray-900 flex items-center gap-2"><i data-lucide="message-square" class="w-4 h-4 text-brand-green"></i> Nouveaux Messages</h4>
+                                <p class="text-sm text-gray-500 mt-1">Soyez alerté lorsqu'un acheteur vous contacte via la messagerie.</p>
+                            </div>
+                            <!-- Toggle -->
+                            <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+                                <input type="checkbox" name="toggle" id="toggle1" checked class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer z-10 transition-transform duration-300"/>
+                                <label for="toggle1" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer transition-colors duration-300"></label>
+                            </div>
+                        </div>
+
+                        <!-- Alert Item -->
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                            <div>
+                                <h4 class="font-bold text-gray-900 flex items-center gap-2"><i data-lucide="heart" class="w-4 h-4 text-rose-500"></i> Favoris</h4>
+                                <p class="text-sm text-gray-500 mt-1">Recevez une notification quand quelqu'un met un de vos animaux en favori.</p>
+                            </div>
+                            <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+                                <input type="checkbox" name="toggle" id="toggle2" checked class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer z-10 transition-transform duration-300"/>
+                                <label for="toggle2" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer transition-colors duration-300"></label>
+                            </div>
+                        </div>
+
+                        <!-- Alert Item -->
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                            <div>
+                                <h4 class="font-bold text-gray-900 flex items-center gap-2"><i data-lucide="calendar" class="w-4 h-4 text-blue-500"></i> Foires et Événements</h4>
+                                <p class="text-sm text-gray-500 mt-1">Rappels pour les foires virtuelles et événements agricoles à venir.</p>
+                            </div>
+                            <div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+                                <input type="checkbox" name="toggle" id="toggle3" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer z-10 transition-transform duration-300"/>
+                                <label for="toggle3" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer transition-colors duration-300"></label>
+                            </div>
+                        </div>
+
+                        <div class="border-t border-gray-100 pt-6 mt-4">
+                            <h3 class="font-bold text-gray-900 mb-4">Canaux de réception</h3>
+                            <div class="space-y-3">
+                                <label class="flex items-center gap-3 cursor-pointer">
+                                    <input type="checkbox" checked class="w-5 h-5 text-brand-green rounded focus:ring-brand-green border-gray-300">
+                                    <span class="text-sm font-medium text-gray-700">Notifications Push (Navigateur)</span>
+                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer">
+                                    <input type="checkbox" checked class="w-5 h-5 text-brand-green rounded focus:ring-brand-green border-gray-300">
+                                    <span class="text-sm font-medium text-gray-700">Emails (contact@elevage-diallo.sn)</span>
+                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer">
+                                    <input type="checkbox" class="w-5 h-5 text-brand-green rounded focus:ring-brand-green border-gray-300">
+                                    <span class="text-sm font-medium text-gray-700">SMS (+221 77 123 45 67)</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. Préférences -->
+                <section id="preferences" class="tab-content">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4">Préférences d'Application</h2>
+                    
+                    <div class="space-y-8">
+                        <div>
+                            <h3 class="font-bold text-gray-900 mb-3">Apparence (Thème)</h3>
+                            <div class="grid grid-cols-3 gap-4">
+                                <button class="border-2 border-brand-green bg-white p-4 rounded-2xl flex flex-col items-center gap-2 hover:bg-gray-50 transition-colors">
+                                    <i data-lucide="sun" class="w-6 h-6 text-amber-500"></i>
+                                    <span class="font-semibold text-sm">Mode Clair</span>
+                                </button>
+                                <button class="border border-gray-200 bg-gray-50 p-4 rounded-2xl flex flex-col items-center gap-2 hover:border-gray-300 transition-colors opacity-60">
+                                    <i data-lucide="moon" class="w-6 h-6 text-indigo-500"></i>
+                                    <span class="font-semibold text-sm">Mode Sombre (Prochainement)</span>
+                                </button>
+                                <button class="border border-gray-200 bg-white p-4 rounded-2xl flex flex-col items-center gap-2 hover:border-gray-300 transition-colors">
+                                    <i data-lucide="monitor" class="w-6 h-6 text-gray-500"></i>
+                                    <span class="font-semibold text-sm">Système</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="font-bold text-gray-900 mb-3">Régionalisation</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Langue de l'interface</label>
+                                    <select class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-brand-green focus:border-brand-green p-3 outline-none">
+                                        <option value="fr">Français</option>
+                                        <option value="wo">Wolof</option>
+                                        <option value="en">Anglais</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Devise d'affichage</label>
+                                    <select class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-brand-green focus:border-brand-green p-3 outline-none">
+                                        <option value="XOF">FCFA (Franc CFA)</option>
+                                        <option value="EUR">EUR (€)</option>
+                                        <option value="USD">USD ($)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Unité de distance (Pour la carte)</label>
+                                    <select class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-brand-green focus:border-brand-green p-3 outline-none">
+                                        <option value="km">Kilomètres (km)</option>
+                                        <option value="mi">Miles (mi)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. Sécurité -->
+                <section id="securite" class="tab-content">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4">Sécurité du compte</h2>
+                    
+                    <div class="space-y-8">
+                        <!-- Changer de mot de passe -->
+                        <div>
+                            <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2"><i data-lucide="key" class="w-5 h-5 text-brand-green"></i> Changer de mot de passe</h3>
+                            <form class="space-y-4 max-w-md">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Mot de passe actuel</label>
+                                    <input type="password" class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-brand-green focus:border-brand-green p-3">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Nouveau mot de passe</label>
+                                    <input type="password" class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-brand-green focus:border-brand-green p-3">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Confirmer le nouveau mot de passe</label>
+                                    <input type="password" class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-brand-green focus:border-brand-green p-3">
+                                </div>
+                                <button type="button" class="bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-xl text-sm font-bold transition-colors shadow-md">
+                                    Mettre à jour le mot de passe
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Authentification à deux facteurs -->
+                        <div class="border-t border-gray-100 pt-6">
+                            <h3 class="font-bold text-gray-900 mb-2 flex items-center gap-2"><i data-lucide="smartphone" class="w-5 h-5 text-blue-500"></i> Authentification à deux facteurs (2FA)</h3>
+                            <p class="text-sm text-gray-500 mb-4">Ajoutez une couche de sécurité supplémentaire à votre compte en exigeant un code de vérification lors de la connexion.</p>
+                            <button class="border-2 border-gray-200 hover:border-gray-300 text-gray-700 px-6 py-2 rounded-xl text-sm font-bold transition-colors bg-white">
+                                Configurer l'A2F
+                            </button>
+                        </div>
+
+                        <!-- Zone Danger -->
+                        <div class="border-t border-red-100 pt-6 mt-8">
+                            <h3 class="font-bold text-red-600 mb-2 flex items-center gap-2"><i data-lucide="alert-triangle" class="w-5 h-5"></i> Zone de Danger</h3>
+                            <p class="text-sm text-gray-500 mb-4">La suppression de votre compte est définitive. Toutes vos annonces et données seront effacées de nos serveurs.</p>
+                            <button class="bg-red-50 hover:bg-red-100 text-red-600 px-6 py-3 rounded-xl text-sm font-bold transition-colors border border-red-200">
+                                Supprimer mon compte
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 5. Abonnement -->
+                <section id="abonnement" class="tab-content">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4">Gérer l'Abonnement</h2>
+                    
+                    <div class="bg-gradient-to-br from-brand-dark to-brand-green rounded-3xl p-6 md:p-8 text-white relative overflow-hidden mb-8 shadow-xl">
+                        <div class="absolute top-0 right-0 p-6 opacity-20 pointer-events-none">
+                            <i data-lucide="award" class="w-32 h-32 text-gold"></i>
+                        </div>
+                        
+                        <div class="relative z-10">
+                            <div class="inline-block px-3 py-1 bg-white/20 rounded-full text-xs font-bold tracking-wider uppercase mb-4 backdrop-blur-sm border border-white/30">
+                                Plan Actuel
+                            </div>
+                            <div class="flex items-baseline gap-4 mb-2">
+                                <h3 class="text-4xl md:text-5xl font-extrabold text-gold">PRO</h3>
+                                <span class="text-lg font-medium opacity-90">7 500 FCFA / mois</span>
+                            </div>
+                            <p class="text-brand-light mb-6">Prochain prélèvement le 15 Septembre 2026.</p>
+                            
+                            <div class="flex gap-4">
+                                <button class="bg-white text-brand-dark px-6 py-3 rounded-xl font-bold hover:bg-gray-50 transition-colors shadow-lg">
+                                    Changer de plan
+                                </button>
+                                <button class="bg-white/10 hover:bg-white/20 border border-white/30 text-white px-6 py-3 rounded-xl font-bold transition-colors backdrop-blur-sm">
+                                    Annuler l'abonnement
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 class="font-bold text-gray-900 mb-4">Moyen de paiement</h3>
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-200 max-w-md">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-8 bg-blue-900 rounded flex items-center justify-center text-white text-xs font-bold italic">
+                                VISA
+                            </div>
+                            <div>
+                                <p class="font-bold text-gray-900">•••• •••• •••• 4242</p>
+                                <p class="text-xs text-gray-500">Expire le 12/28</p>
+                            </div>
+                        </div>
+                        <button class="text-sm font-semibold text-brand-green hover:text-brand-dark">Modifier</button>
+                    </div>
+
+                    <div class="mt-8">
+                        <h3 class="font-bold text-gray-900 mb-4">Historique de facturation</h3>
+                        <div class="overflow-hidden bg-white border border-gray-100 rounded-2xl shadow-sm">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Montant</th>
+                                        <th class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Statut</th>
+                                        <th class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Facture</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100 text-sm">
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-gray-900">15 Août 2026</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-gray-600">7 500 FCFA</td>
+                                        <td class="px-6 py-4 whitespace-nowrap"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Payé</span></td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right"><button class="text-brand-green hover:text-brand-dark"><i data-lucide="download" class="w-4 h-4"></i></button></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="px-6 py-4 whitespace-nowrap text-gray-900">15 Juillet 2026</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-gray-600">7 500 FCFA</td>
+                                        <td class="px-6 py-4 whitespace-nowrap"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Payé</span></td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right"><button class="text-brand-green hover:text-brand-dark"><i data-lucide="download" class="w-4 h-4"></i></button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Init Scripts -->
+    <script>
+        // Initialiser les icônes Lucide
+        lucide.createIcons();
+
+        // Gestion de la navigation entre les onglets
+        function switchTab(tabId) {
+            // Cacher tous les contenus
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Réinitialiser les styles des boutons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = 'tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all text-gray-600 hover:bg-gray-100 hover:text-gray-900';
+            });
+
+            // Afficher le contenu sélectionné
+            document.getElementById(tabId).classList.add('active');
+            
+            // Appliquer le style actif au bouton cliqué
+            const activeBtn = document.querySelector(`[data-target="${tabId}"]`);
+            if(activeBtn) {
+                activeBtn.className = 'tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all text-brand-green bg-brand-green/10';
+            }
+        }
+    </script>
+</body>
+</html>

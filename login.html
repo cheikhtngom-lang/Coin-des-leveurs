@@ -116,7 +116,7 @@
             btnEleveur.className = "flex-1 py-2 text-sm font-medium rounded-lg text-gray-500 hover:text-gray-900 transition-all";
         });
 
-        submitBtn.addEventListener('click', () => {
+        submitBtn.addEventListener('click', async () => {
             const email = document.getElementById('email-address').value;
             const password = document.getElementById('password').value;
             
@@ -125,18 +125,31 @@
                 return;
             }
 
-            const result = DB.login(email, password, currentUserType);
-            
-            if (result.success) {
-                if (result.user.role === 'admin') {
-                    window.location.href = 'dashboard-admin.html';
-                } else if (result.user.role === 'eleveur') {
-                    window.location.href = 'dashboard-eleveur.html';
+            const oldText = submitBtn.innerText;
+            submitBtn.innerText = "Connexion...";
+            submitBtn.disabled = true;
+
+            try {
+                const result = await window.DB.login(email, password, currentUserType);
+                
+                if (result.success) {
+                    if (result.user.role === 'admin') {
+                        window.location.href = 'dashboard-admin.html';
+                    } else if (result.user.role === 'eleveur') {
+                        window.location.href = 'dashboard-eleveur.html';
+                    } else {
+                        window.location.href = 'dashboard-user.html';
+                    }
                 } else {
-                    window.location.href = 'dashboard-user.html';
+                    alert(result.message);
+                    submitBtn.innerText = oldText;
+                    submitBtn.disabled = false;
                 }
-            } else {
-                alert(result.message);
+            } catch (error) {
+                console.error("Erreur critique:", error);
+                alert("Une erreur inattendue s'est produite. Vérifiez que vous lancez bien le site via Live Server (127.0.0.1).");
+                submitBtn.innerText = oldText;
+                submitBtn.disabled = false;
             }
         });
     </script>

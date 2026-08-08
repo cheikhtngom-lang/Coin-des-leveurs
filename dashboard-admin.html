@@ -38,11 +38,11 @@
     </script>
     
     <!-- Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body class="font-sans bg-surface text-gray-800 antialiased h-screen flex overflow-hidden">
+    <script src="db.js"></script>
+    <script>
+        window.currentUser = window.requireAuth(['admin']);
+    </script>
 
     <!-- Sidebar Admin (Dark Theme) -->
     <aside class="w-64 bg-admin border-r border-gray-800 hidden md:flex flex-col h-full z-20 shadow-2xl text-white">
@@ -86,7 +86,7 @@
                     <a href="#" onclick="switchTab('settings')" id="link-settings" class="nav-link flex items-center gap-3 px-3 py-2.5 text-gray-400 hover:bg-white/5 hover:text-white rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
                         <i data-lucide="settings" class="w-5 h-5"></i> Paramètres
                     </a>
-                    <a href="#" onclick="DB.logout(); window.location.href='index.html'" class="flex items-center gap-3 px-3 py-2.5 text-gray-400 hover:bg-white/5 hover:text-white rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
+                    <a href="#" onclick="window.DB.logout().then(() => window.location.href='index.html')" class="flex items-center gap-3 px-3 py-2.5 text-gray-400 hover:bg-white/5 hover:text-white rounded-xl font-medium hover:scale-105 active:scale-95 transition-all duration-300">
                         <i data-lucide="log-out" class="w-5 h-5 text-red-500"></i> Déconnexion
                     </a>
                 </div>
@@ -533,13 +533,11 @@
         </div>
     </main>
 
-    <!-- Init Icons and Charts -->
     <script>
-        const user = requireAuth(['admin']);
-        
         lucide.createIcons();
 
-        function switchTab(tabId) {
+        // Attach to window so inline onclicks can call them
+        window.switchTab = function(tabId) {
             // Hide all views
             document.querySelectorAll('.view-section').forEach(el => {
                 el.classList.add('hidden');
@@ -557,11 +555,11 @@
             if(selectedView) {
                 selectedView.classList.remove('hidden');
                 selectedView.classList.add('block');
-                if (tabId === 'users') renderAdminUsers();
-                if (tabId === 'eleveurs') renderAdminEleveurs();
-                if (tabId === 'animaux') renderAdminAnimaux();
-                if (tabId === 'forum') renderAdminTickets();
-                if (tabId === 'paiements') renderAdminTransactions();
+                if (tabId === 'users') window.renderAdminUsers();
+                if (tabId === 'eleveurs') window.renderAdminEleveurs();
+                if (tabId === 'animaux') window.renderAdminAnimaux();
+                if (tabId === 'forum') window.renderAdminTickets && window.renderAdminTickets();
+                if (tabId === 'paiements') window.renderAdminTransactions && window.renderAdminTransactions();
             }
 
             // Highlight selected link
@@ -572,8 +570,8 @@
             }
         }
 
-        function renderAdminUsers() {
-            const users = DB.getAllUsers();
+        window.renderAdminUsers = async function() {
+            const users = await window.DB.getAllUsers();
             const list = document.getElementById('admin-users-list');
             if(!list) return;
             
@@ -621,8 +619,8 @@
                         <td class="p-4">${subBadge}</td>
                         <td class="p-4 text-right">
                             <div class="flex justify-end gap-2">
-                                <button onclick="handleUserAction('vip', '${u.id}')" class="${subBtnClass} px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm">${subBtnText}</button>
-                                <button onclick="handleUserAction('block', '${u.id}')" class="${blockBtnClass} px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm">${blockBtnText}</button>
+                                <button onclick="window.handleUserAction('vip', '${u.id}')" class="${subBtnClass} px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm">${subBtnText}</button>
+                                <button onclick="window.handleUserAction('block', '${u.id}')" class="${blockBtnClass} px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm">${blockBtnText}</button>
                             </div>
                         </td>
                     </tr>
@@ -634,27 +632,28 @@
             lucide.createIcons();
         }
 
-        function handleUserAction(action, userId) {
+        window.handleUserAction = async function(action, userId) {
             if (action === 'block') {
                 if (confirm('Êtes-vous sûr de vouloir changer le statut de blocage de cet utilisateur ?')) {
-                    DB.toggleUserStatus(userId);
-                    renderAdminUsers(); // refresh list
+                    await window.DB.toggleUserStatus(userId);
+                    window.renderAdminUsers(); // refresh list
                 }
             } else if (action === 'vip') {
                 if (confirm("Voulez-vous modifier l'accès VIP (Illimité) pour cet utilisateur ?")) {
-                    DB.grantUnlimited(userId);
-                    renderAdminUsers(); // refresh list
+                    await window.DB.grantUnlimited(userId);
+                    window.renderAdminUsers(); // refresh list
                 }
             } else if (action === 'verify') {
                 if (confirm("Valider cet éleveur de manière officielle (KYC) ?")) {
-                    DB.verifyEleveur(userId);
-                    renderAdminEleveurs(); // refresh list
+                    await window.DB.verifyEleveur(userId);
+                    window.renderAdminEleveurs(); // refresh list
                 }
             }
         }
 
-        function renderAdminEleveurs() {
-            const users = DB.getAllUsers().filter(u => u.role === 'eleveur');
+        window.renderAdminEleveurs = async function() {
+            const allUsers = await window.DB.getAllUsers();
+            const users = allUsers.filter(u => u.role === 'eleveur');
             const list = document.getElementById('admin-eleveurs-list');
             if(!list) return;
             list.innerHTML = '';
@@ -666,7 +665,7 @@
                 
                 const btn = u.isVerified 
                     ? '<button disabled class="bg-gray-100 text-gray-400 px-4 py-2 rounded-lg text-xs font-bold cursor-not-allowed">Déjà validé</button>'
-                    : `<button onclick="handleUserAction('verify', '${u.id}')" class="bg-brand-green text-white hover:bg-brand-dark px-4 py-2 rounded-lg text-xs font-bold shadow-md shadow-brand-green/30 hover:scale-105 active:scale-95 transition-all">Valider KYC</button>`;
+                    : `<button onclick="window.handleUserAction('verify', '${u.id}')" class="bg-brand-green hover:bg-brand-dark text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm transition-colors">Valider l'éleveur</button>`;
 
                 list.innerHTML += `
                     <tr class="hover:bg-gray-50 transition-colors">
@@ -680,41 +679,33 @@
             lucide.createIcons();
         }
 
-        function handleAnimalAction(action, animalId) {
-            if (action === 'delete') {
-                if (confirm("Voulez-vous vraiment supprimer cette annonce ?")) {
-                    DB.deleteAnimal(animalId);
-                    renderAdminAnimaux();
-                }
-            }
-        }
-
-        function renderAdminAnimaux() {
-            const animals = DB.get('animals') || [];
-            const users = DB.getAllUsers();
+        window.renderAdminAnimaux = async function() {
+            const animals = await window.DB.getAllAnimals();
             const list = document.getElementById('admin-animaux-list');
             if(!list) return;
             list.innerHTML = '';
-
+            
+            const users = await window.DB.get('users'); // For resolving eleveur names
+            
             animals.forEach(a => {
-                const seller = users.find(u => u.id === a.eleveurId);
-                const sellerName = seller ? (seller.farmName || seller.name) : 'Inconnu';
+                const owner = users.find(u => u.id === a.eleveurId) || { name: 'Inconnu' };
+                const deleteBtn = `<button onclick="window.DB.deleteAnimal('${a.id}').then(() => window.renderAdminAnimaux())" class="bg-red-50 text-red-600 hover:bg-red-100 px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-sm flex items-center gap-1"><i data-lucide="trash-2" class="w-3 h-3"></i> Supprimer</button>`;
                 
                 list.innerHTML += `
                     <tr class="hover:bg-gray-50 transition-colors">
-                        <td class="p-4">
-                            <div class="flex items-center gap-4">
-                                <img src="${a.image}" alt="Animal" class="w-12 h-12 rounded-xl object-cover shadow-sm">
-                                <div>
-                                    <p class="font-bold text-gray-900 capitalize">${a.breed}</p>
-                                    <p class="text-xs text-gray-500 capitalize">${a.type} • ${a.location}</p>
-                                </div>
+                        <td class="p-4 flex items-center gap-3">
+                            <img src="${a.image || 'https://images.unsplash.com/photo-1511117833895-4b473c0b85d6?auto=format&fit=crop&w=150&q=80'}" class="w-10 h-10 rounded-lg object-cover">
+                            <div>
+                                <div class="font-bold text-gray-900">${a.title}</div>
+                                <div class="text-xs text-gray-500">${a.category} - ${a.race}</div>
                             </div>
                         </td>
-                        <td class="p-4 text-gray-700 font-medium">${sellerName}</td>
-                        <td class="p-4 text-brand-green font-bold">${a.price.toLocaleString('fr-FR')} FCFA</td>
+                        <td class="p-4 font-medium">${owner.farmName || owner.name}</td>
+                        <td class="p-4 font-bold text-brand-green">${Number(a.price).toLocaleString()} FCFA</td>
                         <td class="p-4 text-right">
-                            <button onclick="handleAnimalAction('delete', '${a.id}')" class="bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 px-3 py-2 rounded-lg text-xs font-bold transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            <div class="flex justify-end">
+                                ${deleteBtn}
+                            </div>
                         </td>
                     </tr>
                 `;
@@ -722,15 +713,33 @@
             lucide.createIcons();
         }
 
-        function handleTicketAction(ticketId) {
+        window.switchSettingTab = function(tabId) {
+            // ... (settings code untouched for brevity since it's UI only)
+            document.querySelectorAll('.setting-panel').forEach(p => {
+                p.classList.remove('block');
+                p.classList.add('hidden');
+            });
+            document.getElementById('set-panel-' + tabId).classList.remove('hidden');
+            document.getElementById('set-panel-' + tabId).classList.add('block');
+
+            document.querySelectorAll('.setting-nav').forEach(btn => {
+                btn.classList.remove('bg-brand-green/10', 'text-brand-green', 'font-bold');
+                btn.classList.add('text-gray-600', 'font-medium', 'hover:bg-gray-100');
+            });
+            const activeBtn = document.getElementById('set-tab-' + tabId);
+            activeBtn.classList.remove('text-gray-600', 'font-medium', 'hover:bg-gray-100');
+            activeBtn.classList.add('bg-brand-green/10', 'text-brand-green', 'font-bold');
+        }
+
+        window.handleTicketAction = async function(ticketId) {
             if (confirm("Marquer ce ticket comme résolu ?")) {
-                DB.resolveTicket(ticketId);
-                renderAdminTickets();
+                await window.DB.resolveTicket(ticketId);
+                window.renderAdminTickets();
             }
         }
 
-        function renderAdminTickets() {
-            const tickets = DB.getAllTickets();
+        window.renderAdminTickets = async function() {
+            const tickets = await window.DB.getAllTickets();
             const list = document.getElementById('admin-tickets-list');
             if(!list) return;
             list.innerHTML = '';
@@ -742,7 +751,7 @@
                 
                 const btn = t.status === 'resolved' 
                     ? '<button disabled class="text-gray-400 font-bold text-xs"><i data-lucide="check" class="w-4 h-4"></i></button>'
-                    : `<button onclick="handleTicketAction('${t.id}')" class="bg-brand-green text-white hover:bg-brand-dark px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md shadow-brand-green/30">Résoudre</button>`;
+                    : `<button onclick="window.handleTicketAction('${t.id}')" class="bg-brand-green text-white hover:bg-brand-dark px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md shadow-brand-green/30">Résoudre</button>`;
 
                 list.innerHTML += `
                     <tr class="hover:bg-gray-50 transition-colors">
@@ -760,8 +769,8 @@
             lucide.createIcons();
         }
 
-        function renderAdminTransactions() {
-            const trans = DB.getAllTransactions();
+        window.renderAdminTransactions = async function() {
+            const trans = await window.DB.getAllTransactions();
             const list = document.getElementById('admin-transactions-list');
             if(!list) return;
             list.innerHTML = '';
@@ -784,7 +793,7 @@
             lucide.createIcons();
         }
 
-        function switchSettingTab(tabName) {
+        window.switchSettingTab = function(tabName) {
             // Hide all setting panels
             document.querySelectorAll('.setting-panel').forEach(el => {
                 el.classList.add('hidden');

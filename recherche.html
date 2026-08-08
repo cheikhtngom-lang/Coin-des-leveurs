@@ -293,108 +293,122 @@
         lucide.createIcons();
 
         document.addEventListener('DOMContentLoaded', () => {
-            renderSearchResults();
+            // Check if Firebase is loaded properly
+            setTimeout(() => {
+                window.renderSearchResults();
+            }, 500); // slight delay to ensure DB is initialized
         });
 
-        function renderSearchResults() {
+        window.renderSearchResults = async function() {
             const list = document.getElementById('search-results');
-            let animals = DB.getAllAnimals();
+            list.innerHTML = `<div class="col-span-3 text-center py-10 text-gray-500">
+                <i data-lucide="loader-2" class="w-8 h-8 animate-spin mx-auto mb-3 text-brand-green"></i>
+                Recherche en cours...</div>`;
+            lucide.createIcons();
             
-            // Filters Application
-            const searchQuery = document.getElementById('filter-search').value.toLowerCase();
-            const region = document.getElementById('filter-region').value;
-            const priceMin = document.getElementById('filter-price-min').value;
-            const priceMax = document.getElementById('filter-price-max').value;
-            
-            const categoryCheckboxes = document.querySelectorAll('.category-filter:checked');
-            const selectedCategories = Array.from(categoryCheckboxes).map(cb => cb.value.toLowerCase());
+            try {
+                let animals = await window.DB.getAllAnimals();
+                
+                // Filters Application
+                const searchQuery = document.getElementById('filter-search').value.toLowerCase();
+                const region = document.getElementById('filter-region').value;
+                const priceMin = document.getElementById('filter-price-min').value;
+                const priceMax = document.getElementById('filter-price-max').value;
+                
+                const categoryCheckboxes = document.querySelectorAll('.category-filter:checked');
+                const selectedCategories = Array.from(categoryCheckboxes).map(cb => cb.value.toLowerCase());
 
-            animals = animals.filter(a => {
-                // Category Filter
-                if (selectedCategories.length > 0 && !selectedCategories.includes(a.category.toLowerCase())) {
-                    return false;
+                animals = animals.filter(a => {
+                    // Category Filter
+                    if (selectedCategories.length > 0 && !selectedCategories.includes(a.category.toLowerCase())) {
+                        return false;
+                    }
+                    
+                    // Region/Location Filter
+                    if (region && a.location && !a.location.toLowerCase().includes(region.toLowerCase())) {
+                        return false;
+                    }
+                    
+                    // Price Filter
+                    const price = Number(a.price);
+                    if (priceMin && price < Number(priceMin)) return false;
+                    if (priceMax && price > Number(priceMax)) return false;
+                    
+                    // Text Search Filter
+                    if (searchQuery) {
+                        const matchTitle = a.title.toLowerCase().includes(searchQuery);
+                        const matchRace = a.race && a.race.toLowerCase().includes(searchQuery);
+                        const matchLocation = a.location && a.location.toLowerCase().includes(searchQuery);
+                        if (!matchTitle && !matchRace && !matchLocation) return false;
+                    }
+                    
+                    return true;
+                });
+                
+                if (animals.length === 0) {
+                    list.innerHTML = `<div class="col-span-3 text-center py-10 text-gray-500">Aucun résultat trouvé.</div>`;
+                    document.getElementById('results-count').innerText = "0 animal trouvé";
+                    return;
                 }
-                
-                // Region/Location Filter
-                if (region && a.location && !a.location.toLowerCase().includes(region.toLowerCase())) {
-                    return false;
-                }
-                
-                // Price Filter
-                const price = Number(a.price);
-                if (priceMin && price < Number(priceMin)) return false;
-                if (priceMax && price > Number(priceMax)) return false;
-                
-                // Text Search Filter
-                if (searchQuery) {
-                    const matchTitle = a.title.toLowerCase().includes(searchQuery);
-                    const matchRace = a.race && a.race.toLowerCase().includes(searchQuery);
-                    const matchLocation = a.location && a.location.toLowerCase().includes(searchQuery);
-                    if (!matchTitle && !matchRace && !matchLocation) return false;
-                }
-                
-                return true;
-            });
-            
-            if (animals.length === 0) {
-                list.innerHTML = `<div class="col-span-3 text-center py-10 text-gray-500">Aucun résultat trouvé.</div>`;
-                document.getElementById('results-count').innerText = "0 animal trouvé";
-                return;
-            }
 
-            document.getElementById('results-count').innerText = `${animals.length} animaux trouvés`;
+                document.getElementById('results-count').innerText = `${animals.length} animaux trouvés`;
 
-            const users = DB.get('users');
+                const users = await window.DB.getAllUsers();
 
-            list.innerHTML = animals.map(a => {
-                const owner = users.find(u => u.id === a.eleveurId) || { farmName: 'Éleveur inconnu' };
-                
-                return `
-                <div class="group bg-white rounded-3xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300">
-                    <div class="relative h-56 overflow-hidden">
-                        <img src="${a.image || 'https://images.unsplash.com/photo-1511117833895-4b473c0b85d6?auto=format&fit=crop&w=800&q=80'}" alt="${a.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
-                        <button class="absolute top-4 right-4 bg-white/90 backdrop-blur p-2 rounded-full text-gray-400 hover:text-red-500 transition-colors shadow-sm">
-                            <i data-lucide="heart" class="w-5 h-5"></i>
-                        </button>
-                        <div class="absolute bottom-4 left-4 bg-brand-green text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
-                            ${Number(a.price).toLocaleString()} FCFA
-                        </div>
-                    </div>
-                    <div class="p-5">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs font-bold text-brand-green uppercase tracking-wider bg-brand-green/10 px-2 py-1 rounded">${a.category}</span>
-                            <div class="flex items-center gap-1 text-xs font-bold text-gray-700">
-                                <i data-lucide="shield-check" class="w-4 h-4 text-brand-green"></i> ${owner.farmName || owner.name}
+                list.innerHTML = animals.map(a => {
+                    const owner = users.find(u => u.id === a.eleveurId) || { farmName: 'Éleveur inconnu' };
+                    
+                    return `
+                    <div class="group bg-white/80 backdrop-blur-xl rounded-3xl overflow-hidden border border-white/50 shadow-sm hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2">
+                        <div class="relative h-56 overflow-hidden">
+                            <img src="${a.image || 'https://images.unsplash.com/photo-1511117833895-4b473c0b85d6?auto=format&fit=crop&w=800&q=80'}" alt="${a.title}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            <button class="absolute top-4 right-4 bg-white/90 backdrop-blur p-2 rounded-full text-gray-400 hover:text-red-500 transition-all hover:scale-110 shadow-sm z-10">
+                                <i data-lucide="heart" class="w-5 h-5"></i>
+                            </button>
+                            <div class="absolute bottom-4 left-4 bg-gradient-to-r from-brand-green to-brand-light text-white px-4 py-1.5 rounded-full text-sm font-bold shadow-lg z-10">
+                                ${Number(a.price).toLocaleString()} FCFA
                             </div>
                         </div>
-                        <h3 class="text-lg font-bold text-gray-900 mb-4 line-clamp-1" title="${a.title}">${a.title}</h3>
-                        
-                        <div class="grid grid-cols-2 gap-y-2 gap-x-4 mb-4 text-sm text-gray-600">
-                            <div class="flex items-center gap-2"><i data-lucide="ruler" class="w-4 h-4 text-gray-400"></i> ${a.weight || '-'} kg</div>
-                            <div class="flex items-center gap-2"><i data-lucide="check-circle" class="w-4 h-4 text-gray-400"></i> ${a.status}</div>
-                            <div class="flex items-center gap-2 col-span-2 truncate"><i data-lucide="map-pin" class="w-4 h-4 text-gray-400"></i> ${a.location}</div>
-                        </div>
-                        <div class="flex gap-3">
-                            <button class="flex-1 bg-gray-50 hover:bg-brand-green hover:text-white text-gray-900 py-2.5 rounded-xl font-semibold transition-colors duration-300 border border-gray-200 hover:border-brand-green text-sm">
-                                Détails
-                            </button>
-                            <button onclick="openChatModal()" class="w-12 flex-shrink-0 flex items-center justify-center bg-brand-green/10 text-brand-green hover:bg-brand-green hover:text-white rounded-xl transition-all duration-300 shadow-sm border border-brand-green/20" title="Contacter l'éleveur (Vocal ou Texte)">
-                                <i data-lucide="mic" class="w-5 h-5"></i>
-                            </button>
+                        <div class="p-5 relative">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-xs font-bold text-brand-green uppercase tracking-wider bg-brand-green/10 px-2 py-1 rounded-md border border-brand-green/20">${a.category}</span>
+                                <div class="flex items-center gap-1 text-xs font-bold text-gray-700 bg-gray-100 px-2 py-1 rounded-md">
+                                    <i data-lucide="shield-check" class="w-3.5 h-3.5 text-brand-green"></i> ${owner.farmName || owner.name || 'Éleveur'}
+                                </div>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-4 line-clamp-1" title="${a.title}">${a.title}</h3>
+                            
+                            <div class="grid grid-cols-2 gap-y-2 gap-x-4 mb-4 text-sm text-gray-600">
+                                <div class="flex items-center gap-2 bg-gray-50 p-1.5 rounded-lg border border-gray-100"><i data-lucide="ruler" class="w-4 h-4 text-brand-light"></i> ${a.weight || '-'} kg</div>
+                                <div class="flex items-center gap-2 bg-gray-50 p-1.5 rounded-lg border border-gray-100"><i data-lucide="check-circle" class="w-4 h-4 text-brand-light"></i> ${a.status}</div>
+                                <div class="flex items-center gap-2 col-span-2 bg-gray-50 p-1.5 rounded-lg border border-gray-100 truncate"><i data-lucide="map-pin" class="w-4 h-4 text-brand-light"></i> ${a.location}</div>
+                            </div>
+                            <div class="flex gap-3 mt-4">
+                                <button class="flex-1 bg-white hover:bg-gradient-to-r hover:from-brand-green hover:to-brand-light hover:text-white text-gray-900 py-2.5 rounded-xl font-bold transition-all duration-300 border border-gray-200 hover:border-transparent text-sm hover:shadow-lg hover:shadow-brand-green/30">
+                                    Détails
+                                </button>
+                                <button onclick="window.openChatModal()" class="w-12 flex-shrink-0 flex items-center justify-center bg-brand-green/10 text-brand-green hover:bg-brand-green hover:text-white rounded-xl transition-all duration-300 shadow-sm border border-brand-green/20 hover:scale-105" title="Contacter l'éleveur (Vocal ou Texte)">
+                                    <i data-lucide="mic" class="w-5 h-5"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-                `;
-            }).join('');
-            
-            lucide.createIcons();
+                    `;
+                }).join('');
+                
+                lucide.createIcons();
+            } catch (error) {
+                console.error(error);
+                list.innerHTML = `<div class="col-span-3 text-center py-10 text-red-500">Erreur lors du chargement des données.</div>`;
+            }
         }
 
         // Chat Modal functions
-        function openChatModal() {
+        window.openChatModal = function() {
             document.getElementById('chatModal').classList.remove('hidden');
         }
-        function closeChatModal() {
+        window.closeChatModal = function() {
             document.getElementById('chatModal').classList.add('hidden');
         }
     </script>
